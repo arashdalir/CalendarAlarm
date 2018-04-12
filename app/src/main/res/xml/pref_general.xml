@@ -13,11 +13,4 @@
         android:defaultValue="false"
         android:key="alarm_vibrate"
         android:title="@string/pref_title_vibrate" />
-
-    <!--
-    <ListPreference
-        android:key="alarm_calendars"
-        android:title="@string/pref_title_calendars"
-        android:layout="@layout/calendars_layout"/>
-        -->
 </PreferenceScreen>

@@ -46,7 +46,7 @@ public class AlarmCalenderHelper {
             Instances.DESCRIPTION
     };
 
-    public static Cursor createCalendarsCursor(Context context) {
+    public static Cursor readCalendars(Context context) {
         Uri.Builder builder = Calendars.CONTENT_URI.buildUpon();
         ContentResolver contentResolver = context.getContentResolver();
         return contentResolver.query(builder.build(), CALENDAR_PROJECTION, null, null, null);

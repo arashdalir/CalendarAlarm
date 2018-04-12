@@ -1,7 +1,7 @@
 <PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
     <Preference
-        android:title="@string/check_permissions">
+        android:title="@string/calendars">
         <intent
-            android:action=".PermissionCheckActivity"/>
+            android:action = ".CalendarSelectionActivity"/>
     </Preference>
 </PreferenceScreen>

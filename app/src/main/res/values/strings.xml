@@ -16,4 +16,11 @@
     <string name="permission_status">Permission Status</string>
     <string name="title_activity_permission_check">Permission Check</string>
     <string name="check_permissions">Check Permissions</string>
+    <string name="permission_missing">Permissions Missing</string>
+    <string name="enable_permissions">Please go to CalendarAlarm\'s settings to resolve permissions issues.</string>
+    <string name="notification_channel_name">Notification Channel</string>
+    <string name="title_activity_calendar_selection">CalendarSelectionActivity</string>
+    <string name="action_settings">Settings</string>
+    <string name="calendars">Calendars</string>
+    <string name="use_to_check_permissions">Click this button to allow app the necessary permissions.</string>
 </resources>

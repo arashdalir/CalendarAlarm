@@ -20,7 +20,13 @@
             android:label="@string/app_name">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
+
                 <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+        <activity android:name=".PermissionCheckActivity">
+            <intent-filter>
+                <action android:name="com.arashdalir.calendaralarm.intent.PERMISSION_CHECK" />
             </intent-filter>
         </activity>
 
@@ -36,11 +42,7 @@
             </intent-filter>
         </receiver>
 
-        <activity android:name=".PermissionCheckActivity">
-            <intent-filter>
-                <action android:name="com.arashdalir.calendaralarm.intent.PERMISSION_CHECK" />
-            </intent-filter>
-        </activity>
+        <activity android:name=".CalendarSelectionActivity"></activity>
     </application>
 
 </manifest>

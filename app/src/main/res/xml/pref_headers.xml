@@ -5,4 +5,8 @@
         android:fragment="com.arashdalir.calendaralarm.SettingsActivity$GeneralPreferenceFragment"
         android:icon="@drawable/ic_info_black_24dp"
         android:title="@string/pref_header_general" />
+    <header
+        android:fragment="com.arashdalir.calendaralarm.SettingsActivity$PermissionsPreferenceFragment"
+        android:icon="@drawable/ic_info_black_24dp"
+        android:title="@string/pref_header_permissions" />
 </preference-headers>

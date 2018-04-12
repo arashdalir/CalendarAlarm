@@ -18,6 +18,7 @@ import android.preference.PreferenceActivity;
 import android.preference.PreferenceFragment;
 import android.preference.PreferenceManager;
 import android.preference.RingtonePreference;
+import android.text.Layout;
 import android.text.TextUtils;
 import android.view.MenuItem;
 
@@ -179,7 +180,8 @@ public class SettingsActivity extends AppCompatPreferenceActivity {
      */
     protected boolean isValidFragment(String fragmentName) {
         return PreferenceFragment.class.getName().equals(fragmentName)
-                || GeneralPreferenceFragment.class.getName().equals(fragmentName);
+                || GeneralPreferenceFragment.class.getName().equals(fragmentName)
+                || PermissionsPreferenceFragment.class.getName().equals(fragmentName);
     }
 
     /**
@@ -198,8 +200,8 @@ public class SettingsActivity extends AppCompatPreferenceActivity {
             // to their values. When their values change, their summaries are
             // updated to reflect the new value, per the Android Design
             // guidelines.
-            bindPreferenceSummaryToValue(findPreference("example_text"));
-            bindPreferenceSummaryToValue(findPreference("example_list"));
+            //bindPreferenceSummaryToValue(findPreference("alarm_ringtone"));
+            //bindPreferenceSummaryToValue(findPreference("alarm_vibrate"));
         }
 
         @Override
@@ -213,24 +215,26 @@ public class SettingsActivity extends AppCompatPreferenceActivity {
         }
     }
 
-    public void requestPermissions() {
-        Context context = (Context) this;
-        if (!AlarmCalenderHelper.checkPermissions(context)) {
-            // Permission is not granted
-            // Should we show an explanation?
-            for (int i = 0; i < AlarmCalenderHelper.permissions.length; i++) {
-                if (shouldShowRequestPermissionRationale(AlarmCalenderHelper.permissions[i])) {
+    /**
+     * This fragment shows general preferences only. It is used when the
+     * activity is showing a two-pane settings UI.
+     */
+    @TargetApi(Build.VERSION_CODES.HONEYCOMB)
+    public static class PermissionsPreferenceFragment extends PreferenceFragment{
+        @Override
+        public void onCreate(Bundle savedInstanceState) {
+            super.onCreate(savedInstanceState);
+            addPreferencesFromResource(R.xml.pref_permissions);
+        }
 
-                    // Show an explanation to the user *asynchronously* -- don't block
-                    // this thread waiting for the user's response! After the user
-                    // sees the explanation, try again to request the permission.
-                }
-                else
-                {
-                    requestPermissions(AlarmCalenderHelper.permissions, 1);
-                }
+        @Override
+        public boolean onOptionsItemSelected(MenuItem item) {
+            int id = item.getItemId();
+            if (id == android.R.id.home) {
+                startActivity(new Intent(getActivity(), SettingsActivity.class));
+                return true;
             }
-
+            return super.onOptionsItemSelected(item);
         }
     }
 }

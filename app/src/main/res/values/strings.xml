@@ -11,4 +11,9 @@
 
     <string name="pref_title_vibrate">Vibrate</string>
     <string name="pref_title_calendars">Calendars</string>
+
+    <string name="pref_header_permissions">Permissions</string>
+    <string name="permission_status">Permission Status</string>
+    <string name="title_activity_permission_check">Permission Check</string>
+    <string name="check_permissions">Check Permissions</string>
 </resources>

@@ -38,6 +38,13 @@ public class AlarmManagerService extends IntentService {
         super("AlarmManagerService");
     }
 
+    public static void startService(Context context)
+    {
+        Intent serviceIntent = new Intent(context, AlarmManagerService.class);
+        serviceIntent.setAction(AlarmManagerService.ACTION_START_SERVICE);
+        context.startService(serviceIntent);
+    }
+
     @Override
     protected void onHandleIntent(Intent intent) {
         if (AlarmCalenderHelper.checkPermissions(this)) {
@@ -54,8 +61,8 @@ public class AlarmManagerService extends IntentService {
             PendingIntent pIntent = PendingIntent.getActivity(this, 0, permissionsIntent, 0);
 
             NotificationCompat.Builder mBuilder = new NotificationCompat.Builder(getApplicationContext(), Notifier.NOTIFICATION_CHANNEL)
-                    .setContentTitle(getString(R.string.permission_missing))
-                    .setContentText(getString(R.string.enable_permissions))
+                    .setContentTitle(getString(R.string.notification_message_permission_missing_title))
+                    .setContentText(getString(R.string.notification_message_permissions_missing_description))
                     .setContentIntent(pIntent)
                     .setAutoCancel(true);
 

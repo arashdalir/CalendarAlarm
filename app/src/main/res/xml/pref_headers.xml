@@ -6,11 +6,19 @@
         android:icon="@drawable/ic_info_black_24dp"
         android:title="@string/pref_header_general" />
     <header
-        android:fragment="com.arashdalir.calendaralarm.SettingsActivity$PermissionsPreferenceFragment"
         android:icon="@drawable/ic_info_black_24dp"
-        android:title="@string/pref_header_permissions" />
+        android:title="@string/pref_header_permissions">
+        <intent
+            android:targetClass="com.arashdalir.calendaralarm.PermissionCheckActivity"
+            android:targetPackage="com.arashdalir.calendaralarm"
+            />
+    </header>
     <header
-        android:fragment="com.arashdalir.calendaralarm.SettingsActivity$CalendarPreferenceFragment"
         android:icon="@drawable/ic_info_black_24dp"
-        android:title="@string/calendars" />
+        android:title="@string/pref_header_calendars">
+        <intent
+            android:targetClass="com.arashdalir.calendaralarm.CalendarSelectionActivity"
+            android:targetPackage="com.arashdalir.calendaralarm"
+            />
+    </header>
 </preference-headers>

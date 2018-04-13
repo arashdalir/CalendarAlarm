@@ -1,7 +1,0 @@
-<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
-    <Preference
-        android:title="@string/check_permissions">
-        <intent
-            android:action=".PermissionCheckActivity"/>
-    </Preference>
-</PreferenceScreen>

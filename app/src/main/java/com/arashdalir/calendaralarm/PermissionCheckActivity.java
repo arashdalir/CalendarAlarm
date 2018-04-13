@@ -5,6 +5,8 @@ import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.content.pm.PermissionInfo;
 import android.graphics.Color;
+import android.graphics.Typeface;
+import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.View;
@@ -12,7 +14,6 @@ import android.widget.Button;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
-import java.security.Permission;
 import java.util.List;
 
 public class PermissionCheckActivity extends AppCompatActivity {
@@ -23,16 +24,14 @@ public class PermissionCheckActivity extends AppCompatActivity {
         setContentView(R.layout.activity_permission_check);
 
         showPermissionList();
+        Button b = findViewById(R.id.GrantPermissionsButton);
 
-        if (AlarmCalenderHelper.checkPermissions(this))
-        {
-            Button b = findViewById(R.id.GrantPermissionsButton);
-
-            if (b != null)
-            {
+        if (b != null) {
+            if (AlarmCalenderHelper.checkPermissions(this)) {
                 b.setEnabled(false);
-                b.setBackgroundColor(Color.parseColor("#999999"));
-                b.setTextColor(Color.parseColor("#ffffff"));
+                b.setText(getText(R.string.activity_permission_button_check_permissions_disabled));
+            } else {
+                b.setText(getText(R.string.activity_permission_button_check_permissions));
             }
         }
     }
@@ -56,13 +55,20 @@ public class PermissionCheckActivity extends AppCompatActivity {
         }
     }
 
-    public void showPermissionList(){
+    public void showPermissionList() {
         Context context = (Context) this;
         List<String> permissionsList = AlarmCalenderHelper.getPermissions(context);
-        LinearLayout ll = findViewById(R.id.PermissionList);
+        LinearLayout llg = findViewById(R.id.PermissionList_Granted);
+        LinearLayout llr = findViewById(R.id.PermissionList_Rejected);
 
-        if (ll != null) {
-            LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT);
+        boolean hasRejected = false,
+                hasGranted = false;
+
+        LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT);
+        params.setMargins(0, (int) getResources().getDimension(R.dimen.spacing), 0, 0);
+
+        if (llg != null && llr != null) {
+
             PackageManager pm = getPackageManager();
 
             // Permission is not granted
@@ -72,24 +78,45 @@ public class PermissionCheckActivity extends AppCompatActivity {
                 TextView tv = new TextView(context);
                 tv.setLayoutParams(params);
 
-                if(context.checkSelfPermission(permission) != PackageManager.PERMISSION_GRANTED){
-                //if (shouldShowRequestPermissionRationale(permission)) {
-                    tv.setTextColor(Color.parseColor("#ff0000"));
-                } else {
-                    tv.setTextColor(Color.parseColor("#009900"));
-                }
+                String hrPermission = permission;
 
                 try {
                     PermissionInfo pi = pm.getPermissionInfo(permission, 0);
-                    permission = (String) pi.loadLabel(pm);
+                    hrPermission = (String) pi.loadLabel(pm);
+                } catch (Exception e) {
                 }
-                catch(Exception e)
+
+                boolean granted = (context.checkSelfPermission(permission) == PackageManager.PERMISSION_GRANTED);
+
+                int colorCode = granted?R.color.colorPermissionsGranted:R.color.colorPermissionsRejected;
+
+                int color = ContextCompat.getColor(context, colorCode);
+
+                if (
+                        (granted && !hasGranted) ||
+                        (!granted && !hasRejected)
+                        )
                 {
+                    TextView title = new TextView(context);
+
+                    title.setTextColor(color);
+                    title.setText(granted?R.string.activity_permission_granted:R.string.activity_permission_rejected);
+                    title.setTypeface(null, Typeface.BOLD);
+
+                    (granted?llg:llr).addView(title);
                 }
 
-                tv.setText("\u2022 " + permission);
+                if (granted) {
+                    hasGranted = true;
+                }else
+                {
+                    hasRejected=true;
+                }
 
-                ll.addView(tv);
+                tv.setText("\u2022 " + hrPermission);
+                tv.setTextColor(color);
+
+                (granted?llg:llr).addView(tv);
             }
         }
     }

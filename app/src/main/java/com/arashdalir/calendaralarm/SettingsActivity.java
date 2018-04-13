@@ -126,9 +126,7 @@ public class SettingsActivity extends AppCompatPreferenceActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        Intent serviceIntent = new Intent(getBaseContext(), AlarmManagerService.class);
-        serviceIntent.setAction(AlarmManagerService.ACTION_START_SERVICE);
-        startService(serviceIntent);
+        AlarmManagerService.startService(this);
 
         Uri defaultAlarmRingtone = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_ALARM);
         Uri alarmRingtone = Uri.parse(PreferenceManager.getDefaultSharedPreferences(this)
@@ -164,9 +162,7 @@ public class SettingsActivity extends AppCompatPreferenceActivity {
      */
     protected boolean isValidFragment(String fragmentName) {
         return PreferenceFragment.class.getName().equals(fragmentName)
-                || GeneralPreferenceFragment.class.getName().equals(fragmentName)
-                || PermissionsPreferenceFragment.class.getName().equals(fragmentName)
-                || CalendarPreferenceFragment.class.getName().equals(fragmentName);
+                || GeneralPreferenceFragment.class.getName().equals(fragmentName);
     }
 
     /**
@@ -187,54 +183,6 @@ public class SettingsActivity extends AppCompatPreferenceActivity {
             // guidelines.
             //bindPreferenceSummaryToValue(findPreference("alarm_ringtone"));
             //bindPreferenceSummaryToValue(findPreference("alarm_vibrate"));
-        }
-
-        @Override
-        public boolean onOptionsItemSelected(MenuItem item) {
-            int id = item.getItemId();
-            if (id == android.R.id.home) {
-                startActivity(new Intent(getActivity(), SettingsActivity.class));
-                return true;
-            }
-            return super.onOptionsItemSelected(item);
-        }
-    }
-
-    /**
-     * This fragment shows general preferences only. It is used when the
-     * activity is showing a two-pane settings UI.
-     */
-    @TargetApi(Build.VERSION_CODES.HONEYCOMB)
-    public static class PermissionsPreferenceFragment extends PreferenceFragment{
-        @Override
-        public void onCreate(Bundle savedInstanceState) {
-            super.onCreate(savedInstanceState);
-            Intent intent = new Intent(getActivity(), PermissionCheckActivity.class);
-            startActivity(intent);
-        }
-
-        @Override
-        public boolean onOptionsItemSelected(MenuItem item) {
-            int id = item.getItemId();
-            if (id == android.R.id.home) {
-                startActivity(new Intent(getActivity(), SettingsActivity.class));
-                return true;
-            }
-            return super.onOptionsItemSelected(item);
-        }
-    }
-
-    /**
-     * This fragment shows general preferences only. It is used when the
-     * activity is showing a two-pane settings UI.
-     */
-    @TargetApi(Build.VERSION_CODES.HONEYCOMB)
-    public static class CalendarPreferenceFragment extends PreferenceFragment{
-        @Override
-        public void onCreate(Bundle savedInstanceState) {
-            super.onCreate(savedInstanceState);
-            Intent intent = new Intent(getActivity(), CalendarSelectionActivity.class);
-            startActivity(intent);
         }
 
         @Override

@@ -6,7 +6,14 @@
     android:layout_height="match_parent"
     tools:context=".CalendarSelectionActivity">
 
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="@dimen/fab_margin"
+        android:layout_marginBottom="@dimen/fab_margin"
+        android:text="@string/activity_calendar_selection_description"/>
     <ScrollView
+        android:layout_margin="@dimen/fab_margin"
         android:layout_width="match_parent"
         android:layout_height="match_parent">
 
@@ -14,6 +21,7 @@
             android:id="@+id/CalendarList"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="vertical" />
+            android:orientation="vertical" >
+        </LinearLayout>
     </ScrollView>
 </android.support.constraint.ConstraintLayout>

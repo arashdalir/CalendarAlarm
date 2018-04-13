@@ -6,27 +6,54 @@
     android:layout_height="match_parent"
     tools:context=".PermissionCheckActivity">
 
-    <LinearLayout
-        android:id="@+id/PermissionList"
+    <android.support.constraint.ConstraintLayout
+        android:id="@+id/PermissionCheckActivity"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="vertical">
-
-        <TextView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="@string/use_to_check_permissions" />
-    </LinearLayout>
-
-    <Button
-        android:id="@+id/GrantPermissionsButton"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:onClick="checkPermissions"
-        android:text="@string/check_permissions"
+        android:layout_height="match_parent"
+        android:layout_margin="@dimen/fab_margin"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.5"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+        app:layout_constraintTop_toTopOf="parent">
+
+        <TextView
+            android:id="@+id/activityPermissionDescription"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/activity_permission_description"
+            app:layout_constraintStart_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="@id/PermissionCheckActivity"
+            android:layout_marginBottom="@dimen/spacing"/>
+
+
+        <LinearLayout
+            android:id="@+id/PermissionList_Rejected"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            app:layout_constraintStart_toEndOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/activityPermissionDescription" />
+
+
+        <LinearLayout
+            android:id="@+id/PermissionList_Granted"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            app:layout_constraintStart_toStartOf="@id/PermissionList_Rejected"
+            app:layout_constraintTop_toBottomOf="@id/PermissionList_Rejected" />
+
+        <Button
+            android:id="@+id/GrantPermissionsButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:onClick="checkPermissions"
+            android:text="@string/activity_permission_button_check_permissions"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintHorizontal_bias="0.5"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/PermissionList_Granted" />
+
+    </android.support.constraint.ConstraintLayout>
 </android.support.constraint.ConstraintLayout>

@@ -6,19 +6,20 @@
     android:layout_height="match_parent"
     tools:context=".PermissionCheckActivity">
 
-    <TextView
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="@string/use_to_check_permissions"/>
-
     <LinearLayout
+        android:id="@+id/PermissionList"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:id="@+id/PermissionList"
-        android:orientation="horizontal"></LinearLayout>
+        android:orientation="vertical">
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/use_to_check_permissions" />
+    </LinearLayout>
 
     <Button
-        android:id="@+id/button"
+        android:id="@+id/GrantPermissionsButton"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:onClick="checkPermissions"

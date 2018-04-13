@@ -28,4 +28,6 @@
     <string name="activity_permission_rejected">Missing Permissions</string>
 
     <string name="activity_calendar_selection_description">Select the calendars for whose events you want to have alarms created:</string>
+    <string name="notification_message_service_started">Service started</string>
+    <string name="notification_message_service_started_description">%1$s service started. Tap to see settings.</string>
 </resources>

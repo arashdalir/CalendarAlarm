@@ -11,9 +11,10 @@ import android.provider.AlarmClock;
 import android.provider.CalendarContract;
 import android.support.v4.app.NotificationCompat;
 
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Calendar;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
+import java.util.HashSet;
 
 /**
  * An {@link IntentService} subclass for handling asynchronous task requests in
@@ -47,13 +48,25 @@ public class AlarmManagerService extends IntentService {
 
     @Override
     protected void onHandleIntent(Intent intent) {
-        if (AlarmCalenderHelper.checkPermissions(this)) {
+        if (PermissionsHelper.checkPermissions(this)) {
             if (intent != null) {
                 final String action = intent.getAction();
                 if (ACTION_MANAGE_ALARMS.equals(action)) {
                     handleActionCreateAlarms();
                 } else if (ACTION_START_SERVICE.equals(action)) {
                     handleActionStart();
+
+                    Intent settingsActivity = new Intent(this.getBaseContext(), SettingsActivity.class);
+                    PendingIntent pIntent = PendingIntent.getActivity(this, 0, settingsActivity, 0);
+
+                    NotificationCompat.Builder mBuilder = new NotificationCompat.Builder(getApplicationContext(), Notifier.NOTIFICATION_CHANNEL)
+                            .setContentTitle(getString(R.string.notification_message_service_started))
+                            .setContentText(getString(R.string.notification_message_service_started_description, getString(R.string.app_name)))
+                            .setContentIntent(pIntent)
+                            .setAutoCancel(true);
+
+                    Notifier.notify(this, mBuilder, Notifier.NOTIFY_SERVICE_STARTED, NotificationCompat.PRIORITY_HIGH);
+
                 }
             }
         } else {
@@ -82,37 +95,48 @@ public class AlarmManagerService extends IntentService {
     private void handleActionCreateAlarms() {
         // TODO: Handle action Foo
         // Run query
-        Cursor cursor = AlarmCalenderHelper.readEvents((Context) this);
+        Cursor cursor = CalenderHelper.readEvents(this);
+        Integer[] allowedMethods = new Integer[]{
+                CalendarContract.Reminders.METHOD_ALARM,
+                CalendarContract.Reminders.METHOD_ALERT
+        };
+
         if (cursor.moveToFirst()) {
             Calendar now = Calendar.getInstance();
-            Pattern alarmPattern = Pattern.compile("Alarm:\\s+((?<hours>\\d+h)?(?<mins>\\d+m)?)");
 
             do {
                 int eventCalendar = cursor.getInt(cursor.getColumnIndex(CalendarContract.Instances.CALENDAR_ID));
+                int eventId = cursor.getInt(cursor.getColumnIndex(CalendarContract.Instances.EVENT_ID));
                 String eventTitle = cursor.getString(cursor.getColumnIndex(CalendarContract.Instances.TITLE));
                 Long beginTime = cursor.getLong(cursor.getColumnIndex(CalendarContract.Instances.BEGIN));
-                String description = cursor.getString(cursor.getColumnIndex(CalendarContract.Instances.DESCRIPTION));
 
-                Matcher alarmPatternMatcher = alarmPattern.matcher(description);
+                Cursor rc = CalenderHelper.readReminders(this, eventId);
 
-                if (alarmPatternMatcher.find()) {
-                    int hours = Integer.parseInt(alarmPatternMatcher.group(2));
-                    int minutes = Integer.parseInt(alarmPatternMatcher.group(3));
+                if (rc.moveToFirst()) {
+                    do {
+                        int method = rc.getInt(rc.getColumnIndex(CalendarContract.Reminders.METHOD));
 
-                    Calendar eventTime = Calendar.getInstance();
-                    eventTime.setTimeInMillis(beginTime);
-                    eventTime.add(Calendar.HOUR, -1 * hours);
-                    eventTime.add(Calendar.MINUTE, -1 * minutes);
+                        if (Arrays.asList(allowedMethods).contains(method)) {
+                            int minutes = rc.getInt(rc.getColumnIndex(CalendarContract.Reminders.MINUTES));
 
-                    if (now.getTimeInMillis() < eventTime.getTimeInMillis()) {
-                        Intent i = new Intent(AlarmClock.ACTION_SET_ALARM);
-                        i.putExtra(AlarmClock.EXTRA_HOUR, eventTime.get(Calendar.HOUR_OF_DAY));
-                        i.putExtra(AlarmClock.EXTRA_MINUTES, eventTime.get(Calendar.MINUTE));
-                        i.putExtra(AlarmClock.EXTRA_MESSAGE, APP_PREFIX + eventTitle);
-                        i.putExtra(AlarmClock.EXTRA_SKIP_UI, true);
-                        startActivity(i);
-                    }
+                            Calendar eventTime = Calendar.getInstance();
+                            eventTime.setTimeInMillis(beginTime);
+                            eventTime.add(Calendar.MINUTE, -1 * minutes);
+
+                            if (now.getTimeInMillis() < eventTime.getTimeInMillis()) {
+                                Intent i = new Intent(AlarmClock.ACTION_SET_ALARM);
+                                i.putExtra(AlarmClock.EXTRA_HOUR, eventTime.get(Calendar.HOUR_OF_DAY));
+                                i.putExtra(AlarmClock.EXTRA_MINUTES, eventTime.get(Calendar.MINUTE));
+                                i.putExtra(AlarmClock.EXTRA_MESSAGE, APP_PREFIX + eventTitle);
+                                i.putExtra(AlarmClock.EXTRA_SKIP_UI, true);
+                                startActivity(i);
+                            }
+                        }
+                    }while (rc.moveToNext());
+
+                    rc.close();
                 }
+
             }
             while (cursor.moveToNext()) ;
 

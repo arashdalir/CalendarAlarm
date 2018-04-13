@@ -1,12 +1,9 @@
 package com.arashdalir.calendaralarm;
 
-import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.database.Cursor;
-import android.graphics.Color;
 import android.provider.CalendarContract;
-import android.support.constraint.ConstraintLayout;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.widget.CheckBox;
@@ -25,9 +22,9 @@ public class CalendarSelectionActivity extends AppCompatActivity {
         LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT);
         params.setMargins(0, (int) getResources().getDimension(R.dimen.spacing), 0, 0);
 
-        if (AlarmCalenderHelper.checkPermissions(context)) {
+        if (PermissionsHelper.checkPermissions(context)) {
 
-            Cursor cursor = AlarmCalenderHelper.readCalendars(context);
+            Cursor cursor = CalenderHelper.readCalendars(context);
 
             if (cursor != null) {
                 cursor.moveToFirst();

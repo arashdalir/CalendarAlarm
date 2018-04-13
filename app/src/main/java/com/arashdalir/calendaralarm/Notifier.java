@@ -9,7 +9,10 @@ import android.support.v4.app.NotificationCompat;
 
 public class Notifier {
     public static final int NOTIFY_PERMISSIONS_MISSING = 1;
+    public static final int NOTIFY_SERVICE_STARTED = 2;
+
     public static final String NOTIFICATION_CHANNEL = "com.arashdalir.calendaralarm.NOTIFICATION_CHANNEL";
+
     public static final int LEVEL_ERROR = NotificationCompat.PRIORITY_MAX;
     public static final int LEVEL_INFO = NotificationCompat.PRIORITY_DEFAULT;
     public static final int LEVEL_WARNING = NotificationCompat.PRIORITY_HIGH;

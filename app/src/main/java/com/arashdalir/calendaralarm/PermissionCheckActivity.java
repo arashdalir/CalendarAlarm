@@ -4,7 +4,6 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.content.pm.PermissionInfo;
-import android.graphics.Color;
 import android.graphics.Typeface;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
@@ -18,16 +17,37 @@ import java.util.List;
 
 public class PermissionCheckActivity extends AppCompatActivity {
 
+    protected final int PERMISSION_REQUEST_ID = 1;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_permission_check);
 
         showPermissionList();
+        toggleButton();
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode,String[] permissions,int[] grantResults){
+        Context context = (Context) this;
+        if (requestCode == PERMISSION_REQUEST_ID)
+        {
+            if (PermissionsHelper.checkPermissions(context)) {
+                setContentView(R.layout.activity_permission_check);
+                showPermissionList();
+
+                AlarmManagerService.startService(this);
+            }
+        }
+
+        toggleButton();
+    }
+
+    public void toggleButton(){
         Button b = findViewById(R.id.GrantPermissionsButton);
 
         if (b != null) {
-            if (AlarmCalenderHelper.checkPermissions(this)) {
+            if (PermissionsHelper.checkPermissions(this)) {
                 b.setEnabled(false);
                 b.setText(getText(R.string.activity_permission_button_check_permissions_disabled));
             } else {
@@ -38,15 +58,12 @@ public class PermissionCheckActivity extends AppCompatActivity {
 
     public void checkPermissions(View view) {
         Context context = (Context) this;
-        if (!AlarmCalenderHelper.checkPermissions(context)) {
-            List<String> permissionsList = AlarmCalenderHelper.getPermissions(context);
+        if (!PermissionsHelper.checkPermissions(context)) {
+            List<String> permissionsList = PermissionsHelper.getPermissions(context);
             String[] permissions = new String[permissionsList.size()];
             permissions = permissionsList.toArray(permissions);
 
-            requestPermissions(permissions, 1);
-
-            setContentView(R.layout.activity_permission_check);
-            showPermissionList();
+            requestPermissions(permissions, PERMISSION_REQUEST_ID);
 
         } else {
             Intent intent = new Intent(context, SettingsActivity.class);
@@ -57,7 +74,7 @@ public class PermissionCheckActivity extends AppCompatActivity {
 
     public void showPermissionList() {
         Context context = (Context) this;
-        List<String> permissionsList = AlarmCalenderHelper.getPermissions(context);
+        List<String> permissionsList = PermissionsHelper.getPermissions(context);
         LinearLayout llg = findViewById(R.id.PermissionList_Granted);
         LinearLayout llr = findViewById(R.id.PermissionList_Rejected);
 

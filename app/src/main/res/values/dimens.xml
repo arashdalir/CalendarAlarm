@@ -1,4 +1,7 @@
 <resources>
     <dimen name="fab_margin">16dp</dimen>
     <dimen name="spacing">10dp</dimen>
+    <dimen name="padd_10">10dp</dimen>
+    <dimen name="action_bar_h">50dp</dimen>
+    <dimen name="ic_delete">24dp</dimen>
 </resources>

@@ -6,4 +6,5 @@
 
     <color name="colorPermissionsRejected">#FF0000</color>
     <color name="colorPermissionsGranted">#009900</color>
+    <color name="bg_row_background">#ff0000</color>
 </resources>

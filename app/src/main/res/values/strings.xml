@@ -3,7 +3,6 @@
 
     <!-- Strings related to Settings -->
 
-    <!-- Example General settings -->
     <string name="pref_header_general">General</string>
     <string name="pref_header_permissions">Permissions</string>
     <string name="pref_header_calendars">Calendars</string>
@@ -11,13 +10,28 @@
     <string name="pref_title_ringtone">Ringtone</string>
     <string name="pref_ringtone_silent">Silent</string>
     <string name="pref_title_vibrate">Vibrate</string>
+    <string name="pref_vibrate_on">On</string>
+    <string name="pref_vibrate_off">Off</string>
 
+    <string name="activity_general_save">Save</string>
+    <string name="activity_calendar_selection_description">Select the calendars for whose events you want to have alarms created:</string>
+
+    <string name="title_activity_settings">Settings</string>
     <string name="title_activity_permission_check">Permission Check</string>
     <string name="title_activity_calendar_selection">Calendar List</string>
+    <string name="title_activity_alarm_list">Alarms List</string>
 
     <string name="notification_message_permission_missing_title">Permissions Missing</string>
     <string name="notification_message_permissions_missing_description">Please go to CalendarAlarm\'s settings to resolve permissions issues.</string>
     <string name="notification_channel_name">Notification Channel</string>
+    <string name="notification_message_looking_for_events">Looking for new events in calendar</string>
+    <string name="notification_message_looking_for_events_description">%1$s is looking for new events or expired ones in calendar.</string>
+    <string name="notification_message_service_started">Service started</string>
+    <string name="notification_message_service_started_description">%1$s service started. Tap to see settings.</string>
+    <string name="notification_message_alarms_modified">Alarms Modified</string>
+    <string name="notification_message_alarms_modified_description">A total of %1$d alarm(s) modified.\n<b>Notifications:</b>\n\t Added: %2$d \n\t Deleted: %3$d</string>
+    <string name="notification_message_alarms_not_modified">No Alarm Modifications</string>
+    <string name="notification_message_alarms_not_modified_description">No changes in alarms\' stati found. Alarms not modified.</string>
 
     <string name="activity_permission_description">
         This application needs following permissions to work properly. If there are permissions listed as missing, the application cannot continue. Please review and grant necessary permissions.
@@ -27,7 +41,22 @@
     <string name="activity_permission_granted">Granted Permissions</string>
     <string name="activity_permission_rejected">Missing Permissions</string>
 
-    <string name="activity_calendar_selection_description">Select the calendars for whose events you want to have alarms created:</string>
-    <string name="notification_message_service_started">Service started</string>
-    <string name="notification_message_service_started_description">%1$s service started. Tap to see settings.</string>
+    <string name="title_service_alarm">%1$s - %2$s - %3$d Minute(s) Before</string>
+    <string name="notification_toast_settings_changes_saved">Changes Saved. Updating Alarms&#8230;</string>
+    <string name="notification_toast_calendar_selection_saved">Selected calendars memorized. Updating Alarms&#8230;</string>
+    <string name="notification_snackbar_alarm_removed">Alarm \"%1$s\" removed!</string>
+
+    <string name="activity_alarm_list_delete_alarm">Delete</string>
+    <string name="activity_alarm_list_alarm_active">Active</string>
+    <string name="activity_alarm_list_alarm_time_format">%1$s at %2$s</string>
+    <string name="activity_alarm_list_alarm_reminder_time">Reminder at: %1$s</string>
+    <string name="activity_alarm_list_alarm_event_time">Event at: %1$s</string>
+    <string name="activity_alarm_list_alarm_calendar">From: %1$s</string>
+    <string name="activity_alarm_list_alarm_expired">Missed Alarm!</string>
+    <string name="activity_alarm_list_alarm_snoozed">Snoozed</string>
+    <string name="activity_alarm_list_delete_alarm_icon_description">Delete Alarm</string>
+    <string name="title_activity_snooze">Snoozing</string>
+    <string name="service_action_string">%1$s-%2$s</string>
+    <string name="activity_snooze_cancel">Cancel Alarm</string>
+    <string name="activity_snooze_snooze">Snooze</string>
 </resources>

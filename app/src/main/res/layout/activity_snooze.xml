@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="utf-8"?>
+<android.support.constraint.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/coordinatorLayout"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".SnoozeActivity">
+
+    <android.support.constraint.Guideline
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/h_mid_guideline"
+        app:layout_constraintGuide_percent="0.5"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        android:orientation="horizontal" />
+
+    <android.support.constraint.Guideline
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/v_mid_guideline"
+        app:layout_constraintGuide_percent="0.5"
+        android:orientation="vertical" />
+
+    <android.support.constraint.Guideline
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/h_low75_guideline"
+        app:layout_constraintGuide_percent="0.75"
+        android:orientation="horizontal" />
+
+    <Button
+        android:id="@+id/snooze_cancel"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/activity_snooze_cancel"
+        app:layout_constraintStart_toStartOf="@id/v_mid_guideline"
+        app:layout_constraintEnd_toEndOf="@id/v_mid_guideline"
+        app:layout_constraintTop_toTopOf="@id/h_low75_guideline"
+        app:layout_constraintBottom_toBottomOf="@id/h_low75_guideline"
+        />
+
+    <Button
+        android:id="@+id/snooze_snooze"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/activity_snooze_snooze"
+        app:layout_constraintStart_toStartOf="@id/v_mid_guideline"
+        app:layout_constraintEnd_toEndOf="@id/v_mid_guideline"
+        app:layout_constraintTop_toTopOf="@id/h_mid_guideline"
+        app:layout_constraintBottom_toBottomOf="@id/h_mid_guideline"
+        />
+</android.support.constraint.ConstraintLayout>

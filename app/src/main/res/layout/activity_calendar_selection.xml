@@ -6,22 +6,42 @@
     android:layout_height="match_parent"
     tools:context=".CalendarSelectionActivity">
 
-    <TextView
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="@dimen/fab_margin"
-        android:layout_marginBottom="@dimen/fab_margin"
-        android:text="@string/activity_calendar_selection_description"/>
     <ScrollView
-        android:layout_margin="@dimen/fab_margin"
+        android:id="@+id/CalendarListHolder"
         android:layout_width="match_parent"
-        android:layout_height="match_parent">
+        android:layout_height="match_parent"
+        android:layout_margin="@dimen/fab_margin"
+        app:layout_constraintTop_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent">
 
         <LinearLayout
-            android:id="@+id/CalendarList"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="vertical" >
+            android:orientation="vertical">
+            <TextView
+                android:id="@+id/ActivityCalendarDescription"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/activity_calendar_selection_description"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent" />
+
+            <LinearLayout
+                android:layout_margin="@dimen/fab_margin"
+                android:id="@+id/CalendarList"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical" />
+
+            <Button
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:onClick="saveCalendars"
+                android:text="@string/activity_general_save"
+                app:layout_constraintHorizontal_bias="0.5"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/CalendarListHolder" />
         </LinearLayout>
     </ScrollView>
+
 </android.support.constraint.ConstraintLayout>

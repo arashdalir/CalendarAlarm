@@ -3,8 +3,9 @@ package com.arashdalir.calendaralarm;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 
-public class AutoStart extends BroadcastReceiver {
+public class AutoStartReceiver extends BroadcastReceiver {
 
     @Override
     public void onReceive(Context context, Intent intent) {

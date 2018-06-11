@@ -8,12 +8,16 @@ import android.graphics.Typeface;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import java.util.List;
+
+import static android.content.Intent.FLAG_ACTIVITY_REORDER_TO_FRONT;
 
 public class PermissionCheckActivity extends AppCompatActivity {
 
@@ -36,7 +40,7 @@ public class PermissionCheckActivity extends AppCompatActivity {
                 setContentView(R.layout.activity_permission_check);
                 showPermissionList();
 
-                AlarmManagerService.startService(this);
+                AlarmManagerService.enqueueWork(this);
             }
         }
 
@@ -66,7 +70,7 @@ public class PermissionCheckActivity extends AppCompatActivity {
             requestPermissions(permissions, PERMISSION_REQUEST_ID);
 
         } else {
-            Intent intent = new Intent(context, SettingsActivity.class);
+            Intent intent = new Intent(context, SettingsActivity.class).setFlags(FLAG_ACTIVITY_REORDER_TO_FRONT);
             startActivity(intent);
             finish();
         }
@@ -136,5 +140,15 @@ public class PermissionCheckActivity extends AppCompatActivity {
                 (granted?llg:llr).addView(tv);
             }
         }
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        return OptionsItemSelectionHelper.handleOptionSelection(this, item) || super.onOptionsItemSelected(item);
+    }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        return OptionsItemSelectionHelper.createMenuItems(this, menu);
     }
 }

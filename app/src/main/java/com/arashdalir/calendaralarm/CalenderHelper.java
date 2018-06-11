@@ -90,7 +90,7 @@ public class CalenderHelper {
 
         Calendar now = Calendar.getInstance();
         long beginms = now.getTimeInMillis();
-        now.add(Calendar.DATE, 3);
+        now.add(Calendar.DATE, 7);
         long endms = now.getTimeInMillis();
 
         ContentUris.appendId(builder, beginms);

@@ -27,11 +27,13 @@
     <string name="notification_message_looking_for_events">Looking for new events in calendar</string>
     <string name="notification_message_looking_for_events_description">%1$s is looking for new events or expired ones in calendar.</string>
     <string name="notification_message_service_started">Service started</string>
-    <string name="notification_message_service_started_description">%1$s service started. Tap to see settings.</string>
+    <string name="notification_message_service_started_description">%1$s service started. Tap to open App.</string>
     <string name="notification_message_alarms_modified">Alarms Modified</string>
     <string name="notification_message_alarms_modified_description">A total of %1$d alarm(s) modified.\n<b>Notifications:</b>\n\t Added: %2$d \n\t Deleted: %3$d</string>
     <string name="notification_message_alarms_not_modified">No Alarm Modifications</string>
-    <string name="notification_message_alarms_not_modified_description">No changes in alarms\' stati found. Alarms not modified.</string>
+    <string name="notification_message_alarms_not_modified_description">No modifications in calendar events detected.</string>
+    <string name="notification_message_no_calendars_selected">No Calendars Selected.</string>
+    <string name="notification_message_no_calendars_selected_description">You have not selected any calendars yet. Please tap here to do that first.</string>
 
     <string name="activity_permission_description">
         This application needs following permissions to work properly. If there are permissions listed as missing, the application cannot continue. Please review and grant necessary permissions.
@@ -59,4 +61,15 @@
     <string name="service_action_string">%1$s-%2$s</string>
     <string name="activity_snooze_cancel">Cancel Alarm</string>
     <string name="activity_snooze_snooze">Snooze</string>
+    <string name="menu_reload">Reload Events</string>
+    <string name="menu_list">View List</string>
+    <string name="title_activity_test">TestActivity</string>
+    <string name="menu_reset">Reset Events</string>
+    <string name="menu_reset_title">Reset Stored Events</string>
+    <string name="menu_reset_title_description">Are you sure you want to reset all the events fetched by the app? This action is irreversible!</string>
+    <string name="menu_reset_initiated">Resetting Events&#8230;</string>
+    <string name="notification_message_events_reset">Cleared All Events!</string>
+    <string name="notification_message_events_reset_description">Events cleared from the system.</string>
+    <string name="activity_alarm_list_remove_reminder">Rmove Reminder?</string>
+    <string name="activity_alarm_list_remove_reminder_description">Are you sure you want to remove this reminder?</string>
 </resources>

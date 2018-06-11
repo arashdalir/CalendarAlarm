@@ -8,6 +8,8 @@ import android.provider.CalendarContract;
 import android.support.v4.widget.CompoundButtonCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.CheckBox;
 import android.widget.LinearLayout;
@@ -16,6 +18,8 @@ import android.widget.Toast;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+
+import static android.content.Intent.FLAG_ACTIVITY_REORDER_TO_FRONT;
 
 public class CalendarSelectionActivity extends AppCompatActivity {
     protected final List<CheckBox> checkBoxes = new ArrayList<>();
@@ -70,7 +74,7 @@ public class CalendarSelectionActivity extends AppCompatActivity {
             }
             cursor.close();
         } else {
-            Intent intent = new Intent(context, PermissionCheckActivity.class);
+            Intent intent = new Intent(context, PermissionCheckActivity.class).setFlags(FLAG_ACTIVITY_REORDER_TO_FRONT);
             startActivity(intent);
         }
     }
@@ -112,6 +116,16 @@ public class CalendarSelectionActivity extends AppCompatActivity {
 
         Notifier.showToast(context, context.getString(R.string.notification_toast_calendar_selection_saved), Toast.LENGTH_LONG);
 
-        AlarmManagerService.startService(context);
+        AlarmManagerService.enqueueWork(context);
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        return OptionsItemSelectionHelper.handleOptionSelection(this, item) || super.onOptionsItemSelected(item);
+    }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        return OptionsItemSelectionHelper.createMenuItems(this, menu);
     }
 }

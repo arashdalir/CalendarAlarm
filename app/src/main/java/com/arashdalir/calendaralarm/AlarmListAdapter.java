@@ -14,19 +14,17 @@ import android.widget.TextView;
 import java.text.DateFormat;
 import java.util.ArrayList;
 
-public class AlarmListAdapter extends RecyclerView.Adapter<com.arashdalir.calendaralarm.AlarmListAdapter.ViewHolder> {
+public class AlarmListAdapter
+        extends RecyclerView.Adapter<com.arashdalir.calendaralarm.AlarmListAdapter.ViewHolder> {
     private Alarms alarms;
 
     public static class ViewHolder extends RecyclerView.ViewHolder {
         // each data item is just a string in this case
         View alarmView;
-        public ConstraintLayout foreground, background;
 
         ViewHolder(View v) {
             super(v);
             alarmView = v;
-            foreground = v.findViewById(R.id.alarm_foreground);
-            background = v.findViewById(R.id.alarm_background);
         }
     }
 
@@ -35,13 +33,10 @@ public class AlarmListAdapter extends RecyclerView.Adapter<com.arashdalir.calend
         this.alarms = alarms;
     }
 
-    public Alarms.Alarm getItem(int position){
-        if (position < this.getItemCount())
-        {
+    public Alarms.Alarm getItem(int position) {
+        if (position < this.getItemCount()) {
             return alarms.getAlarm(position);
-        }
-        else
-        {
+        } else {
             return null;
         }
     }
@@ -76,66 +71,62 @@ public class AlarmListAdapter extends RecyclerView.Adapter<com.arashdalir.calend
         title.setText(alarm.getTitle());
         vEventTime.setText(eventTime);
         vReminderTime.setText(reminderTime);
+        on.setShowText(false);
+
         if (!alarm.hasState(Alarms.Alarm.STATE_INACTIVE)) {
             on.setChecked(true);
         } else {
             on.setChecked(false);
         }
 
-        on.setShowText(false);
         on.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+            @Override
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-                if (!buttonView.isEnabled())
-                {
+
+                if (!buttonView.isEnabled()) {
                     return;
                 }
 
-                if (isChecked)
-                {
+                if (isChecked) {
                     alarm.resetState(Alarms.Alarm.STATE_INACTIVE);
-                }
-                else
-                {
+                } else {
                     alarm.setState(Alarms.Alarm.STATE_INACTIVE);
                 }
+
+                buttonView.setChecked(isChecked);
+
                 alarms.storeAlarms();
-                notifyDataSetChanged();
             }
         });
 
+
         ArrayList<String> status = new ArrayList<>();
 
-        if (alarm.hasState(Alarms.Alarm.STATE_REMINDER_TIME_PASSED))
-        {
+        if (alarm.hasState(Alarms.Alarm.STATE_REMINDER_TIME_PASSED)) {
             status.add(context.getString(R.string.activity_alarm_list_alarm_expired));
             on.setEnabled(false);
         }
 
-        if (alarm.hasState(Alarms.Alarm.STATE_SNOOZED))
-        {
+        if (alarm.hasState(Alarms.Alarm.STATE_SNOOZED)) {
             status.add(context.getString(R.string.activity_alarm_list_alarm_snoozed));
         }
 
-        if (status.size() > 0)
-        {
+        if (status.size() > 0) {
             statusLine.setText(TextUtils.join("\n", status));
         }
     }
 
-    void removeItem(int position){
+    void removeItem(int position) {
         Alarms.Alarm alarm = this.getItem(position);
 
-        if (alarm != null)
-        {
-            if (alarms.delete(position, alarm))
-            {
+        if (alarm != null) {
+            if (alarms.delete(position, alarm)) {
                 notifyItemRemoved(position);
             }
         }
     }
 
-    void restoreItem(Alarms.Alarm alarm, int position)
-    {
+    void restoreItem(Alarms.Alarm alarm, int position) {
         alarms.getAlarm(alarm.getReminderId()).set(alarm);
         alarms.storeAlarms();
         notifyItemInserted(position);

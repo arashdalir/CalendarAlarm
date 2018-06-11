@@ -16,6 +16,8 @@ import android.preference.PreferenceFragment;
 import android.preference.PreferenceManager;
 import android.preference.RingtonePreference;
 import android.preference.SwitchPreference;
+import android.view.Menu;
+import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.widget.Toast;
 
@@ -46,7 +48,7 @@ public class SettingsActivity extends AppCompatPreferenceActivity {
             preference.setSummary(summary);
 
             Notifier.showToast(context, context.getResources().getString(R.string.notification_toast_settings_changes_saved), Toast.LENGTH_SHORT);
-            AlarmManagerService.startService(context);
+            AlarmManagerService.enqueueWork(context);
             return true;
         }
     };
@@ -77,29 +79,25 @@ public class SettingsActivity extends AppCompatPreferenceActivity {
 
             // Trigger the listener immediately with the preference's  current value.
 
-            if (preference instanceof RingtonePreference)
-            {
+            if (preference instanceof RingtonePreference) {
                 // Trigger the listener immediately with the preference's
                 // current value.
                 sBindPreferenceSummaryToValueListener.onPreferenceChange(
                         preference,
                         PreferenceManager.getDefaultSharedPreferences(
-                                preference.getContext()).getString(preference.getKey(),""));
-            }
-            else if (preference instanceof SwitchPreference)
-            {
+                                preference.getContext()).getString(preference.getKey(), ""));
+            } else if (preference instanceof SwitchPreference) {
                 // Trigger the listener immediately with the preference's
                 // current value.
                 sBindPreferenceSummaryToValueListener.onPreferenceChange(
                         preference,
                         PreferenceManager.getDefaultSharedPreferences(
-                                preference.getContext()).getBoolean(preference.getKey(),true));
+                                preference.getContext()).getBoolean(preference.getKey(), true));
             }
         }
     }
 
-    protected static String getPreferenceSummary(Context context, String key, Object value)
-    {
+    protected static String getPreferenceSummary(Context context, String key, Object value) {
         String summary = "";
 
         switch (key) {
@@ -107,9 +105,7 @@ public class SettingsActivity extends AppCompatPreferenceActivity {
                 String val = (String) value;
                 if (val.isEmpty()) {
                     summary = context.getString(R.string.pref_ringtone_silent);
-                }
-                else
-                {
+                } else {
                     Ringtone ringtone = RingtoneManager.getRingtone(context, Uri.parse((String) val));
 
                     summary = ringtone.getTitle(context);
@@ -117,12 +113,9 @@ public class SettingsActivity extends AppCompatPreferenceActivity {
                 break;
 
             case StorageHelper.STORAGE_ALARM_VIBRATE:
-                if ((Boolean) value)
-                {
+                if ((Boolean) value) {
                     summary = context.getString(R.string.pref_vibrate_on);
-                }
-                else
-                {
+                } else {
                     summary = context.getString(R.string.pref_vibrate_off);
                 }
                 break;
@@ -192,12 +185,22 @@ public class SettingsActivity extends AppCompatPreferenceActivity {
 
         @Override
         public boolean onOptionsItemSelected(MenuItem item) {
-            int id = item.getItemId();
-            if (id == android.R.id.home) {
-                startActivity(new Intent(getActivity(), SettingsActivity.class));
-                return true;
-            }
-            return super.onOptionsItemSelected(item);
+            return OptionsItemSelectionHelper.handleOptionSelection(this, item) || super.onOptionsItemSelected(item);
         }
+
+        @Override
+        public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
+            OptionsItemSelectionHelper.createMenuItems(inflater, menu);
+        }
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        return OptionsItemSelectionHelper.handleOptionSelection(this, item) || super.onOptionsItemSelected(item);
+    }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        return OptionsItemSelectionHelper.createMenuItems(this, menu);
     }
 }

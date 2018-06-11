@@ -15,42 +15,21 @@ public class AlarmsTouchHelper extends ItemTouchHelper.SimpleCallback {
 
     public interface AlarmTouchHelperListener {
         void onSwiped(RecyclerView.ViewHolder viewHolder, int direction, int position);
+
+        void onChildDraw(
+                Canvas c,
+                RecyclerView recyclerView,
+                RecyclerView.ViewHolder viewHolder,
+                float dX,
+                float dY,
+                int actionState,
+                boolean isCurrentlyActive
+        );
     }
 
     @Override
     public boolean onMove(RecyclerView recyclerView, RecyclerView.ViewHolder viewHolder, RecyclerView.ViewHolder target) {
-        return true;
-    }
-
-    @Override
-    public void onSelectedChanged(RecyclerView.ViewHolder viewHolder, int actionState) {
-        if (viewHolder != null) {
-            final View foregroundView = ((AlarmListAdapter.ViewHolder) viewHolder).foreground;
-
-            getDefaultUIUtil().onSelected(foregroundView);
-        }
-    }
-
-
-    @Override
-    public void onChildDrawOver(
-            Canvas c,
-            RecyclerView recyclerView,
-            RecyclerView.ViewHolder viewHolder,
-            float dX,
-            float dY,
-            int actionState,
-            boolean isCurrentlyActive
-    ) {
-        final View foregroundView = ((AlarmListAdapter.ViewHolder) viewHolder).foreground;
-        getDefaultUIUtil().onDrawOver(c, recyclerView, foregroundView, dX, dY,
-                actionState, isCurrentlyActive);
-    }
-
-    @Override
-    public void clearView(RecyclerView recyclerView, RecyclerView.ViewHolder viewHolder) {
-        final View foregroundView = ((AlarmListAdapter.ViewHolder) viewHolder).foreground;
-        getDefaultUIUtil().clearView(foregroundView);
+        return false;
     }
 
     @Override
@@ -63,12 +42,20 @@ public class AlarmsTouchHelper extends ItemTouchHelper.SimpleCallback {
             int actionState,
             boolean isCurrentlyActive
     ) {
-        final View foregroundView = ((AlarmListAdapter.ViewHolder) viewHolder).foreground;
-
-        getDefaultUIUtil().onDraw(
+        listener.onChildDraw(
                 c,
                 recyclerView,
-                foregroundView,
+                viewHolder,
+                dX,
+                dY,
+                actionState,
+                isCurrentlyActive
+        );
+
+        super.onChildDraw(
+                c,
+                recyclerView,
+                viewHolder,
                 dX,
                 dY,
                 actionState,

@@ -8,9 +8,12 @@ import org.json.JSONObject;
 
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 
-public class Alarms {
+public class Alarms{
     private ArrayList<Alarm> alarms;
     private Context context;
 
@@ -132,14 +135,14 @@ public class Alarms {
                 version = alm.getString(ALARM_VERSION);
                 state = alm.getInt(ALARM_STATE);
             } catch (Exception e) {
-                Log.e(Alarms.class.toString(), e.getMessage());
+                Log.e(this.getClass().toString(), e.getMessage());
             }
 
             return set(calendarId, title, reminderTime, eventTime, ringtone, vibrate, state, version);
         }
 
         Alarm set(int calendarId, String title, Calendar reminderTime, Calendar eventTime, String ringtone, boolean vibrate) {
-            return set(calendarId, title, reminderTime, eventTime, ringtone, vibrate, STATE_NEW, ALARM_VERSION);
+            return set(calendarId, title, reminderTime, eventTime, ringtone, vibrate, STATE_NEW, ALARMS_STORAGE_VERSION);
         }
 
         Alarm set(int calendarId, String title, Calendar reminderTime, Calendar eventTime, String ringtone, boolean vibrate, int state, String version) {
@@ -208,7 +211,7 @@ public class Alarms {
             }
             else
             {
-                this.state &= state;
+                this.state |= state;
             }
         }
 
@@ -427,8 +430,13 @@ public class Alarms {
                 for (int i = 0; i < alarms.length(); i++) {
                     JSONObject alm = (JSONObject) alarms.get(i);
                     String alarmId = alm.getString(ALARM_ID);
-                    Alarm alarm = new Alarm(alarmId).set(alm);
-                    this.alarms.add(alarm);
+
+                    Alarm alarm = this.getAlarm(alarmId);
+                    alarm.set(alm);
+                    if (alarm.hasState(Alarm.STATE_NEW))
+                    {
+                        alarm.setState(Alarm.STATE_STORED);
+                    }
                     converted = alarm.convertVersion();
                 }
             }
@@ -436,6 +444,8 @@ public class Alarms {
             if (converted) {
                 this.storeAlarms();
             }
+
+            sort();
 
             return true;
         } catch (Exception e) {
@@ -455,7 +465,7 @@ public class Alarms {
                         JSONObject alm = alarm.toJSON();
                         almJSON.put(alm);
                     } catch (Exception e) {
-                        Log.e(Alarms.class.toString(), e.getMessage());
+                        Log.e(this.getClass().toString(), e.getMessage());
                     }
                 }
             }
@@ -463,5 +473,19 @@ public class Alarms {
         StorageHelper.storeAlarms(context, almJSON);
     }
 
-    //boolean modifyAlarm(String alarmId, )
+    public void resetStoredAlarms() {
+        alarms.clear();
+    }
+
+    void sort(){
+        Collections.sort(
+                alarms,
+                new Comparator<Alarm>() {
+                    @Override
+                    public int compare(Alarm o1, Alarm o2) {
+                        return o1.getReminderTime().compareTo(o2.getReminderTime());
+                    }
+                }
+        );
+    }
 }

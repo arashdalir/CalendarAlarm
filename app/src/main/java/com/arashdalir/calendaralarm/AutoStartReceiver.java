@@ -3,16 +3,17 @@ package com.arashdalir.calendaralarm;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
-import android.content.pm.PackageManager;
+import android.util.Log;
 
 public class AutoStartReceiver extends BroadcastReceiver {
 
     @Override
     public void onReceive(Context context, Intent intent) {
-        String action = intent.getAction();
-        if (action != null && action.equals("android.intent.action.BOOT_COMPLETED"))
+        if (Intent.ACTION_BOOT_COMPLETED.equals(intent.getAction()))
         {
-            AlarmManagerService.startService(context);
+            Log.i(this.getClass().toString(), "Service started at boot!");
+            AlarmManagerService.enqueueWork(context);
         }
+        Log.i(this.getClass().toString(), "Service should be started by now!");
     }
 }

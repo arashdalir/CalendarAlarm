@@ -6,12 +6,11 @@
     android:layout_height="wrap_content">
 
     <android.support.constraint.ConstraintLayout
-        android:tag="delete_bg"
+        android:id="@+id/delete_bg"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:background="@color/bg_row_delete_bg_color"
-        android:padding="@dimen/padd_10"
-       >
+        android:padding="@dimen/padd_10">
 
         <ImageView
             android:contentDescription="@string/activity_alarm_list_delete_alarm_icon_description"
@@ -19,10 +18,10 @@
             android:layout_width="@dimen/ic_delete"
             android:layout_height="@dimen/ic_delete"
             android:src="@drawable/ic_delete_white_24dp"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintStart_toStartOf="@id/alarm_list"
+            app:layout_constraintEnd_toEndOf="@id/alarm_list"
             app:layout_constraintBottom_toBottomOf="parent"
-            />
+            app:layout_constraintTop_toTopOf="parent" />
 
         <TextView
             android:layout_width="wrap_content"
@@ -30,29 +29,29 @@
             android:text="@string/activity_alarm_list_delete_alarm"
             android:textColor="#fff"
             android:textSize="13sp"
+            app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toStartOf="@id/delete_icon"
-            app:layout_constraintTop_toTopOf="parent"
-            app:layout_constraintBottom_toBottomOf="parent" />
+            app:layout_constraintTop_toTopOf="parent" />
     </android.support.constraint.ConstraintLayout>
 
     <!--TODO: create edit background-->
     <android.support.constraint.ConstraintLayout
-        android:tag="edit_bg"
+        android:id="@+id/edit_bg"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:background="@color/bg_row_edit_bg_color"
         android:padding="@dimen/padd_10">
 
         <ImageView
-            android:contentDescription="@string/activity_alarm_list_delete_alarm_icon_description"
             android:id="@+id/edit_icon"
             android:layout_width="@dimen/ic_delete"
             android:layout_height="@dimen/ic_delete"
+            android:contentDescription="@string/activity_alarm_list_delete_alarm_icon_description"
             android:src="@drawable/ic_delete_white_24dp"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintStart_toStartOf="@id/alarm_list"
+            app:layout_constraintEnd_toEndOf="@id/alarm_list"
             app:layout_constraintBottom_toBottomOf="parent"
-            />
+            app:layout_constraintTop_toTopOf="parent" />
 
         <TextView
             android:layout_width="wrap_content"
@@ -60,42 +59,19 @@
             android:text="@string/activity_alarm_list_delete_alarm"
             android:textColor="#fff"
             android:textSize="13sp"
-            app:layout_constraintEnd_toStartOf="@id/edit_icon"
-            app:layout_constraintTop_toTopOf="parent"
-            app:layout_constraintBottom_toBottomOf="parent" />
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintStart_toEndOf="@id/edit_icon"
+            app:layout_constraintTop_toTopOf="parent" />
     </android.support.constraint.ConstraintLayout>
 
-    <android.support.constraint.ConstraintLayout
-        android:id="@+id/alarm_foreground"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:background="@android:color/white"
-        android:padding="@dimen/padd_10">
-
-        <TextView
-            android:id="@+id/alarm_title"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:textStyle="bold"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent" />
-
-        <TextView
-            android:id="@+id/alarm_calendar"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/alarm_title" />
-
         <android.support.constraint.ConstraintLayout
-            android:id="@+id/alarm_details"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/alarm_calendar">
+            android:background="@android:color/white"
+            android:padding="@dimen/padd_10">
 
             <TextView
-                android:id="@+id/alarm_event_time"
+                android:id="@+id/alarm_title"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:textStyle="bold"
@@ -103,24 +79,48 @@
                 app:layout_constraintTop_toTopOf="parent" />
 
             <TextView
-                android:id="@+id/alarm_reminder_time"
-                android:layout_width="wrap_content"
+                android:id="@+id/alarm_calendar"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                app:layout_constraintTop_toBottomOf="@id/alarm_event_time"
-                app:layout_constraintStart_toStartOf="parent"/>
-            <Switch
-                android:id="@+id/alarm_active"
-                android:layout_width="wrap_content"
-                android:layout_height="match_parent"
-                android:layout_centerVertical="true"
-                app:layout_constraintEnd_toEndOf="parent" />
-        </android.support.constraint.ConstraintLayout>
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/alarm_title" />
 
-        <TextView
-            android:id="@+id/alarm_status_line"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            app:layout_constraintTop_toBottomOf="@+id/alarm_details"/>
-    </android.support.constraint.ConstraintLayout>
+            <android.support.constraint.ConstraintLayout
+                android:id="@+id/alarm_details"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/alarm_calendar">
+
+                <TextView
+                    android:id="@+id/alarm_event_time"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:textStyle="bold"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toTopOf="parent" />
+
+                <TextView
+                    android:id="@+id/alarm_reminder_time"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toBottomOf="@id/alarm_event_time" />
+
+                <Switch
+                    android:id="@+id/alarm_active"
+                    android:layout_width="wrap_content"
+                    android:layout_height="match_parent"
+                    android:layout_centerVertical="true"
+                    app:layout_constraintEnd_toEndOf="parent" />
+            </android.support.constraint.ConstraintLayout>
+
+            <TextView
+                android:id="@+id/alarm_status_line"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:visibility="invisible"
+                app:layout_constraintTop_toBottomOf="@+id/alarm_details" />
+        </android.support.constraint.ConstraintLayout>
 
 </android.support.constraint.ConstraintLayout>

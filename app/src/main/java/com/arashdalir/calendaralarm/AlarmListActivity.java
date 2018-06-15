@@ -3,13 +3,12 @@ package com.arashdalir.calendaralarm;
 import android.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
-import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
-import android.graphics.RectF;
 import android.os.Bundle;
 import android.support.design.widget.Snackbar;
+import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.DefaultItemAnimator;
 import android.support.v7.widget.DividerItemDecoration;
@@ -24,18 +23,32 @@ import android.view.View;
 public class AlarmListActivity extends AppCompatActivity implements AlarmsTouchHelper.AlarmTouchHelperListener {
     private RecyclerView rv;
     AlarmListAdapter adapter;
+    SwipeRefreshLayout refresher;
     Alarms alarms;
-    Paint p = new Paint();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
         setContentView(R.layout.activity_alarm_list);
+
+        refresher = findViewById(R.id.rv_alarm_list_refresher);
+
+        refresher.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
+            @Override
+            public void onRefresh() {
+                drawView();
+                refresher.setRefreshing(false);
+            }
+        });
+
+        drawView();
+    }
+
+    void drawView() {
         Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
-        rv = findViewById(R.id.AlarmList);
+        rv = findViewById(R.id.alarm_list);
 
         alarms = new Alarms(getApplicationContext());
         alarms.getStoredAlarms();
@@ -55,6 +68,7 @@ public class AlarmListActivity extends AppCompatActivity implements AlarmsTouchH
     @Override
     protected void onResume() {
         alarms.getStoredAlarms();
+        drawView();
 
         super.onResume();
     }
@@ -62,18 +76,23 @@ public class AlarmListActivity extends AppCompatActivity implements AlarmsTouchH
     @Override
     public void onChildDraw(Canvas c, RecyclerView recyclerView, RecyclerView.ViewHolder viewHolder, float dX, float dY, int actionState, boolean isCurrentlyActive) {
 
-        if(actionState == ItemTouchHelper.ACTION_STATE_SWIPE){
-            View delete = viewHolder.itemView.findViewWithTag("delete_bg");
-            View edit = viewHolder.itemView.findViewWithTag("edit_bg");
+        if (viewHolder.getAdapterPosition() == -1) {
+            return;
+        }
 
-            if(dX > 0){
+        if (actionState == ItemTouchHelper.ACTION_STATE_SWIPE) {
+            View delete = viewHolder.itemView.findViewById(R.id.delete_bg);
+            View edit = viewHolder.itemView.findViewById(R.id.edit_bg);
+
+            if (dX < 0) {
                 delete.setVisibility(View.VISIBLE);
                 edit.setVisibility(View.INVISIBLE);
 
             } else {
-                delete.setVisibility(View.INVISIBLE);
-                edit.setVisibility(View.VISIBLE);
+               delete.setVisibility(View.INVISIBLE);
+               edit.setVisibility(View.VISIBLE);
             }
+
         }
     }
 
@@ -123,7 +142,12 @@ public class AlarmListActivity extends AppCompatActivity implements AlarmsTouchH
                                     );
                                 }
                             })
-                    .setNegativeButton(android.R.string.no, null).show();
+                    .setNegativeButton(android.R.string.no, new DialogInterface.OnClickListener() {
+                        public void onClick(DialogInterface dialog, int whichButton) {
+                            // remove the item from recycler view
+                            adapter.notifyDataSetChanged();
+                        }
+                    }).show();
         }
     }
 

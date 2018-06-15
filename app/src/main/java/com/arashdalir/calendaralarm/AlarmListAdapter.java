@@ -2,6 +2,7 @@ package com.arashdalir.calendaralarm;
 
 import android.content.Context;
 import android.support.constraint.ConstraintLayout;
+import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.text.TextUtils;
 import android.view.LayoutInflater;
@@ -43,8 +44,8 @@ public class AlarmListAdapter
 
     @Override
     public ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
-        View v = LayoutInflater.from(parent.getContext()).inflate(R.layout.rv_alarm, parent, false);
 
+        View v = LayoutInflater.from(parent.getContext()).inflate(R.layout.rv_alarm, parent, false);
         return new ViewHolder(v);
     }
 
@@ -113,6 +114,7 @@ public class AlarmListAdapter
 
         if (status.size() > 0) {
             statusLine.setText(TextUtils.join("\n", status));
+            statusLine.setVisibility(View.VISIBLE);
         }
     }
 

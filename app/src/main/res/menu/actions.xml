@@ -7,10 +7,15 @@
         android:id="@+id/menu_settings"
         app:showAsAction="never" />
 
-    <item
+    <!--item
         android:title="@string/menu_reload"
         android:id="@+id/menu_reload"
-        app:showAsAction="ifRoom"/>
+        app:showAsAction="ifRoom"/-->
+
+    <item
+        android:id="@+id/menu_create_fake_reminder"
+        app:showAsAction="never"
+        android:title="@string/create_fake_reminder"/>
 
     <item
         android:title="@string/menu_list"

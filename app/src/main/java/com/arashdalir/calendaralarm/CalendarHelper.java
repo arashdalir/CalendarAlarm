@@ -4,6 +4,7 @@ import android.content.ContentResolver;
 import android.content.ContentUris;
 import android.content.Context;
 import android.database.Cursor;
+import android.graphics.Color;
 import android.net.Uri;
 import android.provider.CalendarContract;
 import android.provider.CalendarContract.Calendars;
@@ -16,7 +17,7 @@ import java.util.Calendar;
  * Created by ada on 18-Oct-17.
  */
 
-public class CalenderHelper {
+public class CalendarHelper {
     // Calendars Projection
     private static final String[] CALENDAR_PROJECTION = new String[]{
             Calendars._ID,
@@ -123,28 +124,33 @@ public class CalenderHelper {
 
     public static CalendarInfo getCalendarInfo(Context context, int calendarId)
     {
-        if (calendars.indexOfKey(calendarId) < 0)
+        if (calendarId == -1)
         {
-            Cursor cr = readCalendars(context, calendarId);
-
-            String calendarName;
-            int color;
-
-            if (cr.moveToFirst())
-            {
-                do{
-                    calendarName = cr.getString(cr.getColumnIndex(Calendars.CALENDAR_DISPLAY_NAME));
-                    color = cr.getInt(cr.getColumnIndex(Calendars.CALENDAR_COLOR));
-
-                    CalendarInfo info = new CalendarInfo(calendarId, calendarName, color);
-
-                    calendars.put(calendarId, info);
-                }while (cr.moveToNext());
-            }
-
-            cr.close();
+            return new CalendarHelper.CalendarInfo(calendarId, "Fake Calendar", Color.RED);
         }
+        else{
+            if (calendars.indexOfKey(calendarId) < 0)
+            {
+                Cursor cr = readCalendars(context, calendarId);
 
-        return calendars.get(calendarId, null);
+                String calendarName;
+                int color;
+
+                if (cr.moveToFirst())
+                {
+                    do{
+                        calendarName = cr.getString(cr.getColumnIndex(Calendars.CALENDAR_DISPLAY_NAME));
+                        color = cr.getInt(cr.getColumnIndex(Calendars.CALENDAR_COLOR));
+
+                        CalendarInfo info = new CalendarInfo(calendarId, calendarName, color);
+
+                        calendars.put(calendarId, info);
+                    }while (cr.moveToNext());
+                }
+
+                cr.close();
+            }
+            return calendars.get(calendarId, null);
+        }
     }
 }

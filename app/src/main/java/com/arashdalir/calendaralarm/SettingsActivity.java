@@ -183,6 +183,7 @@ public class SettingsActivity extends AppCompatPreferenceActivity {
             bindPreferenceSummaryToValue(findPreference(StorageHelper.STORAGE_ALARM_VIBRATE));
         }
 
+        /*
         @Override
         public boolean onOptionsItemSelected(MenuItem item) {
             return OptionsItemSelectionHelper.handleOptionSelection(this, item) || super.onOptionsItemSelected(item);
@@ -192,6 +193,7 @@ public class SettingsActivity extends AppCompatPreferenceActivity {
         public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
             OptionsItemSelectionHelper.createMenuItems(inflater, menu);
         }
+        */
     }
 
     @Override

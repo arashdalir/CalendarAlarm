@@ -3,9 +3,9 @@ package com.arashdalir.calendaralarm;
 import android.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
+import android.content.Intent;
 import android.graphics.Canvas;
 import android.graphics.Color;
-import android.graphics.Paint;
 import android.os.Bundle;
 import android.support.design.widget.Snackbar;
 import android.support.v4.widget.SwipeRefreshLayout;
@@ -20,41 +20,71 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 
+import java.util.Observable;
+import java.util.Observer;
+
 public class AlarmListActivity extends AppCompatActivity implements AlarmsTouchHelper.AlarmTouchHelperListener {
     private RecyclerView rv;
-    AlarmListAdapter adapter;
     SwipeRefreshLayout refresher;
-    Alarms alarms;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_alarm_list);
 
+        CalendarApplication application = (CalendarApplication) getApplication();
+        final AlarmListAdapter adapter = application.getAdapter(this);
+
         refresher = findViewById(R.id.rv_alarm_list_refresher);
 
         refresher.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
             @Override
             public void onRefresh() {
-                drawView();
+                Intent intent = new Intent(getApplicationContext(), AlarmManagerService.class);
+                intent.setAction(ServiceHelper.ACTION_SET_WAKEUP_TIMERS);
+                AlarmManagerService.enqueueWork(getApplicationContext(), intent);
+                drawView(adapter);
                 refresher.setRefreshing(false);
             }
         });
 
-        drawView();
+        drawView(adapter);
+        observeService();
     }
 
-    void drawView() {
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+    }
+
+    void observeService(){
+        ServiceHelper.observeAdapter().addObserver(new Observer() {
+            @Override
+            public void update(Observable o, final Object arg) {
+                new Thread(){
+                    public void run(){
+                        runOnUiThread(new Runnable() {
+                            @Override
+                            public void run() {
+                                AlarmListAdapter adapter = (AlarmListAdapter) arg;
+                                adapter.checkTimes();
+                                drawView(adapter);
+                            }
+                        });
+                    }
+                };
+            }
+        });
+    }
+
+    void drawView(AlarmListAdapter adapter) {
         Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
         rv = findViewById(R.id.alarm_list);
 
-        alarms = new Alarms(getApplicationContext());
-        alarms.getStoredAlarms();
-
         RecyclerView.LayoutManager layoutManager = new LinearLayoutManager(this);
-        adapter = new AlarmListAdapter(alarms);
         rv.setLayoutManager(layoutManager);
         rv.setItemAnimator(new DefaultItemAnimator());
         rv.addItemDecoration(new DividerItemDecoration(this, DividerItemDecoration.VERTICAL));
@@ -67,14 +97,17 @@ public class AlarmListActivity extends AppCompatActivity implements AlarmsTouchH
 
     @Override
     protected void onResume() {
-        alarms.getStoredAlarms();
-        drawView();
+        CalendarApplication application = (CalendarApplication) getApplication();
+        final AlarmListAdapter adapter = application.getAdapter(this);
+
+        drawView(adapter);
 
         super.onResume();
     }
 
     @Override
-    public void onChildDraw(Canvas c, RecyclerView recyclerView, RecyclerView.ViewHolder viewHolder, float dX, float dY, int actionState, boolean isCurrentlyActive) {
+    public void onChildDraw(Canvas c, RecyclerView recyclerView, RecyclerView.ViewHolder
+            viewHolder, float dX, float dY, int actionState, boolean isCurrentlyActive) {
 
         if (viewHolder.getAdapterPosition() == -1) {
             return;
@@ -89,8 +122,8 @@ public class AlarmListActivity extends AppCompatActivity implements AlarmsTouchH
                 edit.setVisibility(View.INVISIBLE);
 
             } else {
-               delete.setVisibility(View.INVISIBLE);
-               edit.setVisibility(View.VISIBLE);
+                delete.setVisibility(View.INVISIBLE);
+                edit.setVisibility(View.VISIBLE);
             }
 
         }
@@ -99,6 +132,7 @@ public class AlarmListActivity extends AppCompatActivity implements AlarmsTouchH
     @Override
     public void onSwiped(RecyclerView.ViewHolder viewHolder, int direction, int position) {
         if (viewHolder instanceof AlarmListAdapter.ViewHolder) {
+            final AlarmListAdapter adapter = ((CalendarApplication) getApplication()).getAdapter(this);
             // get the removed item name to display it in snack bar
             final int deletedIndex = viewHolder.getAdapterPosition();
             final String name = adapter.getItem(deletedIndex).getTitle();
@@ -127,7 +161,7 @@ public class AlarmListActivity extends AppCompatActivity implements AlarmsTouchH
                                         public void onClick(View view) {
 
                                             // undo is selected, restore the deleted item
-                                            adapter.restoreItem(deletedItem, deletedIndex);
+                                            adapter.restoreItem(deletedItem);
                                         }
                                     };
                                     action.actionTextColor = Color.YELLOW;
@@ -147,7 +181,9 @@ public class AlarmListActivity extends AppCompatActivity implements AlarmsTouchH
                             // remove the item from recycler view
                             adapter.notifyDataSetChanged();
                         }
-                    }).show();
+                    })
+                    .setCancelable(false)
+                    .show();
         }
     }
 

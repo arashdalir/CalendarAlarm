@@ -2,7 +2,7 @@
 <android.support.constraint.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
-    android:id="@+id/coordinatorLayout"
+    android:id="@+id/snooze_layout"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     tools:context=".SnoozeActivity">
@@ -21,26 +21,47 @@
     <android.support.constraint.Guideline
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:id="@+id/v_mid_guideline"
+        android:id="@+id/guideline_h_25"
+        app:layout_constraintGuide_percent="0.25"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        android:orientation="horizontal" />
+
+    <android.support.constraint.Guideline
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/guideline_v_mid"
         app:layout_constraintGuide_percent="0.5"
         android:orientation="vertical" />
 
     <android.support.constraint.Guideline
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:id="@+id/h_low75_guideline"
+        android:id="@+id/guideline_h_75"
         app:layout_constraintGuide_percent="0.75"
         android:orientation="horizontal" />
+
+    <TextView
+        android:id="@+id/alarm_title"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        app:layout_constraintStart_toStartOf="@id/guideline_v_mid"
+        app:layout_constraintEnd_toEndOf="@id/guideline_v_mid"
+        app:layout_constraintTop_toTopOf="@id/guideline_h_25"
+        app:layout_constraintBottom_toBottomOf="@id/guideline_h_25"
+        />
 
     <Button
         android:id="@+id/snooze_cancel"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="@string/activity_snooze_cancel"
-        app:layout_constraintStart_toStartOf="@id/v_mid_guideline"
-        app:layout_constraintEnd_toEndOf="@id/v_mid_guideline"
-        app:layout_constraintTop_toTopOf="@id/h_low75_guideline"
-        app:layout_constraintBottom_toBottomOf="@id/h_low75_guideline"
+        app:layout_constraintStart_toStartOf="@id/guideline_v_mid"
+        app:layout_constraintEnd_toEndOf="@id/guideline_v_mid"
+        app:layout_constraintTop_toTopOf="@id/guideline_h_75"
+        app:layout_constraintBottom_toBottomOf="@id/guideline_h_75"
         />
 
     <Button
@@ -48,8 +69,8 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="@string/activity_snooze_snooze"
-        app:layout_constraintStart_toStartOf="@id/v_mid_guideline"
-        app:layout_constraintEnd_toEndOf="@id/v_mid_guideline"
+        app:layout_constraintStart_toStartOf="@id/guideline_v_mid"
+        app:layout_constraintEnd_toEndOf="@id/guideline_v_mid"
         app:layout_constraintTop_toTopOf="@id/h_mid_guideline"
         app:layout_constraintBottom_toBottomOf="@id/h_mid_guideline"
         />

@@ -45,7 +45,7 @@ public class CalendarSelectionActivity extends AppCompatActivity {
         params.setMargins(0, (int) getResources().getDimension(R.dimen.spacing), 0, 0);
 
         if (PermissionsHelper.checkPermissions(context)) {
-            Cursor cursor = CalenderHelper.readCalendars(context);
+            Cursor cursor = CalendarHelper.readCalendars(context);
 
             if (cursor.moveToFirst()){
                 do {

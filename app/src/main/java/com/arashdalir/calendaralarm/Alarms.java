@@ -1,6 +1,5 @@
 package com.arashdalir.calendaralarm;
 
-import android.content.Context;
 import android.util.Log;
 
 import org.json.JSONArray;
@@ -8,14 +7,12 @@ import org.json.JSONObject;
 
 import java.util.ArrayList;
 import java.util.Calendar;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 
 public class Alarms{
-    private ArrayList<Alarm> alarms;
-    private Context context;
+    private static ArrayList<Alarm> alarms;
 
     private static final String ALARM_EVENT_TIME = "eventTime";
     private static final String ALARM_VIBRATE = "vibrate";
@@ -29,16 +26,13 @@ public class Alarms{
 
     private static final String ALARMS_STORAGE_VERSION = "v1";
 
-    public ArrayList<Alarm> getAlarms() {
-        return alarms;
-    }
-
     public class Alarm {
         public static final int STATE_NEW = 0;
         public static final int STATE_STORED = 1;
         public static final int STATE_INACTIVE = 1 << 1;
         public static final int STATE_REMINDER_TIME_PASSED = 1 << 2;
         public static final int STATE_SNOOZED = 1 << 3;
+        public static final int STATE_DELETED = 1 << 4;
 
         private String reminderId = null;
         private String ringtone = null;
@@ -50,11 +44,6 @@ public class Alarms{
         private String version = null;
         private int state = STATE_NEW;
         private boolean markDeleted = false;
-
-        Alarm() {
-            reminderId = null;
-            reset();
-        }
 
         Alarm(String id) {
             this.reminderId = id;
@@ -279,6 +268,31 @@ public class Alarms{
         public void markForDeletion(boolean markDeleted) {
             this.markDeleted = markDeleted;
         }
+
+        public boolean checkTimes() {
+            boolean createTimer = false;
+            if (!hasState(Alarms.Alarm.STATE_INACTIVE)) {
+                if (eventTimePassed())
+                {
+                    markForDeletion();
+                }
+                else if (reminderTimePassed()) {
+                    setState(Alarms.Alarm.STATE_REMINDER_TIME_PASSED);
+                } else if (!isSnoozing()) {
+                    if (!eventTimePassed()) {
+                        createTimer = true;
+                    }
+                } else {
+                    markForDeletion();
+                }
+            }
+
+            return createTimer;
+        }
+
+        public boolean isDeleted(){
+            return isMarkedForDeletion() || hasState(Alarm.STATE_DELETED);
+        }
     }
 
     public class AlarmsStati{
@@ -315,21 +329,15 @@ public class Alarms{
         }
     }
 
-    Alarms(Context context) {
-        this.context = context;
+    Alarms() {
         alarms = new ArrayList<>();
-    }
-
-    Context getContext() {
-        return context;
     }
 
     public AlarmsStati filterCalendars(List<Integer> calendars) {
         AlarmsStati status = new AlarmsStati();
 
         boolean expired = false, passed = false;
-        int length = this.length();
-        for (int i = 0; i < length; i++) {
+        for (int i = 0; i < count(); i++) {
             Alarm alarm = this.getAlarm(i);
             expired =  alarm.reminderTimePassed();
             passed = alarm.eventTimePassed();
@@ -353,6 +361,23 @@ public class Alarms{
         return status;
     }
 
+    public boolean checkTimes() {
+        boolean status = false;
+        if (!alarms.isEmpty())
+        {
+            for (Alarm alarm: alarms)
+            {
+                alarm.checkTimes();
+
+                if (alarm.isDeleted())
+                {
+                    status = true;
+                }
+            }
+        }
+        return status;
+    }
+
     public Alarm getAlarm(String reminderId) {
         Alarm alarm;
         int position = getAlarmPosition(reminderId);
@@ -368,16 +393,26 @@ public class Alarms{
         return alarm;
     }
 
-    public int length() {
-        return alarms.size();
-    }
-
     public Alarm getAlarm(int position) {
+        Alarm alarm = null;
+
         if (!alarms.isEmpty()) {
-            return alarms.get(position);
-        } else {
-            return null;
+            int current = 0;
+
+            for (int i = 0; i < alarms.size(); i++) {
+                if (!alarms.get(i).isDeleted()) {
+
+                    if (current == position)
+                    {
+                        alarm = alarms.get(i);
+                        break;
+                    }
+                    current++;
+                }
+            }
         }
+
+        return alarm;
     }
 
     public int getAlarmPosition(Alarm alarm)
@@ -412,17 +447,15 @@ public class Alarms{
     boolean delete(int position, Alarm deleted) {
         Alarm alarm = this.getAlarm(position);
         if (alarm.reminderId.equals(deleted.reminderId)) {
-            this.alarms.remove(position);
-            this.storeAlarms();
+            alarm.setState(Alarm.STATE_DELETED);
             return true;
         } else {
             return false;
         }
     }
 
-    boolean getStoredAlarms() {
+    boolean set(JSONArray alarms) {
         try {
-            JSONArray alarms = StorageHelper.getStoredAlarms(context);
 
             boolean converted = false;
 
@@ -441,19 +474,15 @@ public class Alarms{
                 }
             }
 
-            if (converted) {
-                this.storeAlarms();
-            }
-
             sort();
 
-            return true;
+            return converted;
         } catch (Exception e) {
             return false;
         }
     }
 
-    void storeAlarms() {
+    JSONArray asJsonArray() {
         JSONArray almJSON = new JSONArray();
 
         if (alarms.size() > 0) {
@@ -470,11 +499,8 @@ public class Alarms{
                 }
             }
         }
-        StorageHelper.storeAlarms(context, almJSON);
-    }
 
-    public void resetStoredAlarms() {
-        alarms.clear();
+        return almJSON;
     }
 
     void sort(){
@@ -487,5 +513,25 @@ public class Alarms{
                     }
                 }
         );
+    }
+
+    void clear(){
+        alarms.clear();
+    }
+
+    public int count() {
+        int count = 0;
+
+        for(Alarm alarm: alarms) {
+
+            alarm.checkTimes();
+
+            if (!alarm.isDeleted())
+            {
+                count++;
+            }
+        }
+
+        return count;
     }
 }

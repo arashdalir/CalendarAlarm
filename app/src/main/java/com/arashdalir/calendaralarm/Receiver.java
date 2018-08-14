@@ -3,10 +3,9 @@ package com.arashdalir.calendaralarm;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
-import android.os.Build;
 import android.util.Log;
 
-public class AutoStartReceiver extends BroadcastReceiver {
+public class Receiver extends BroadcastReceiver {
 
     @Override
     public void onReceive(Context context, Intent intent) {
@@ -14,6 +13,13 @@ public class AutoStartReceiver extends BroadcastReceiver {
             Log.i(this.getClass().toString(), "Service started at boot!");
 
             AlarmManagerService.enqueueWork(context, intent);
+        }
+        else
+        {
+            if (intent.getAction().contains(SnoozeActivity.ACTION_SNOOZE))
+            {
+                ServiceHelper.doAlarm(context.getApplicationContext(), intent);
+            }
         }
     }
 }

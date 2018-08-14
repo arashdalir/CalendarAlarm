@@ -70,7 +70,9 @@
     <string name="menu_reset_initiated">Resetting Events&#8230;</string>
     <string name="notification_message_events_reset">Cleared All Events!</string>
     <string name="notification_message_events_reset_description">Events cleared from the system.</string>
-    <string name="activity_alarm_list_remove_reminder">Rmove Reminder?</string>
+    <string name="activity_alarm_list_remove_reminder">Remove Reminder?</string>
     <string name="activity_alarm_list_remove_reminder_description">Are you sure you want to remove this reminder?</string>
     <string name="create_fake_reminder">Create Fake Reminder</string>
+    <string name="notification_message_alarming">Alarming %s</string>
+    <string name="activity_alarm_list_alarm_alarming">Being alarmed</string>
 </resources>

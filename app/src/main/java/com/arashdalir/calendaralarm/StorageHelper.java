@@ -53,13 +53,17 @@ public class StorageHelper {
     }
 
     public static String getRingtone(Context context) {
+        return getRingtone(context, false);
+    }
+
+    public static String getRingtone(Context context, boolean returnDefault) {
         Uri defaultAlarmRingtone = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_ALARM);
         String defaultRingtone = defaultAlarmRingtone.toString();
         SharedPreferences settingsStorage = PreferenceManager.getDefaultSharedPreferences(context);
 
         String ringtone = settingsStorage.getString(StorageHelper.STORAGE_ALARM_RINGTONE, defaultRingtone);
 
-        if (ringtone.equals(defaultAlarmRingtone.toString()))
+        if (!returnDefault && ringtone.equals(defaultAlarmRingtone.toString()))
         {
             ringtone = "";
         }

@@ -1,5 +1,6 @@
 package com.arashdalir.calendaralarm;
 
+import android.app.Notification;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
 import android.content.Context;
@@ -12,9 +13,9 @@ import android.view.View;
 import android.widget.Toast;
 
 public class Notifier {
-
     public static final int NOTIFY_PERMISSIONS_MISSING = 1;
     public static final int NOTIFY_GENERAL = 2;
+    public static final int NOTIFY_SNOOZE = 3;
 
     private static final String NOTIFICATION_CHANNEL = "com.arashdalir.calendaralarm.NOTIFICATION_CHANNEL";
 
@@ -34,7 +35,9 @@ public class Notifier {
         try {
             NotificationManager notificationManager = prepareNotificationChannel(context);
             notificationManager.cancel(notificationId);
-            notificationManager.notify(notificationId, mBuilder.build());
+            Notification notification  = mBuilder.build();
+
+            notificationManager.notify(notificationId, notification);
 
             return true;
         } catch (Exception e) {
@@ -80,6 +83,14 @@ public class Notifier {
             }
         }
         snackbar.show();
+    }
+
+    public static void cancelNotification(Context context, int notificationId) {
+        try {
+            NotificationManager notificationManager = prepareNotificationChannel(context);
+            notificationManager.cancel(notificationId);
+        } catch (Exception e) {
+        }
     }
 
     public static class snackBarAction {

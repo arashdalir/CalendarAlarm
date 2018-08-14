@@ -74,11 +74,13 @@ public class OptionsItemSelectionHelper {
         Alarms alarms = adapter.getAlarms();
 
         Calendar now = Calendar.getInstance();
-        Alarms.Alarm alarm = alarms.getAlarm(String.format("fake-%d", now.getTimeInMillis()));
         Calendar reminder = (Calendar) now.clone();
-        reminder.add(Calendar.MINUTE, 5);
+        reminder.set(Calendar.MILLISECOND, 0);
+        reminder.set(Calendar.SECOND, 0);
+        Alarms.Alarm alarm = alarms.getAlarm(String.format("fake-%d", reminder.getTimeInMillis()));
+        reminder.add(Calendar.MINUTE, 2);
         Calendar event = (Calendar) now.clone();
-        event.add(Calendar.MINUTE, 10);
+        event.add(Calendar.MINUTE, 5);
 
         alarm.set(-1, "Fake Alarm", reminder, event, StorageHelper.getRingtone(context), StorageHelper.getVibrate(context));
         alarms.sort();

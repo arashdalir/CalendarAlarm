@@ -76,10 +76,6 @@ public class AlarmListAdapter
         String reminderTime = context.getString(R.string.activity_alarm_list_alarm_reminder_time, context.getString(R.string.activity_alarm_list_alarm_time_format, df.format(alarm.getReminderTime().getTime()), tf.format(alarm.getReminderTime().getTime())));
         String eventTime = context.getString(R.string.activity_alarm_list_alarm_event_time, context.getString(R.string.activity_alarm_list_alarm_time_format, df.format(alarm.getEventTime().getTime()), tf.format(alarm.getEventTime().getTime())));
 
-        int cId = alarm.getCalendarId();
-
-        CalendarHelper.CalendarInfo calendar = CalendarHelper.getCalendarInfo(context, cId);
-
         TextView title = holder.alarmView.findViewById(R.id.alarm_title);
         Switch on = holder.alarmView.findViewById(R.id.alarm_active);
         TextView vEventTime = holder.alarmView.findViewById(R.id.alarm_event_time);
@@ -87,8 +83,8 @@ public class AlarmListAdapter
         TextView calendarName = holder.alarmView.findViewById(R.id.alarm_calendar);
         TextView statusLine = holder.alarmView.findViewById(R.id.alarm_status_line);
 
-        calendarName.setText(context.getString(R.string.activity_alarm_list_alarm_calendar, calendar.getDisplayName()));
-        calendarName.setTextColor(calendar.getColor());
+        calendarName.setText(context.getString(R.string.activity_alarm_list_alarm_calendar, alarm.getCalendarName(context)));
+        calendarName.setTextColor(alarm.getCalendarColor(context));
         title.setText(alarm.getTitle());
         vEventTime.setText(eventTime);
         vReminderTime.setText(reminderTime);
@@ -120,13 +116,15 @@ public class AlarmListAdapter
 
         ArrayList<String> status = new ArrayList<>();
 
-        if (alarm.hasState(Alarms.Alarm.STATE_REMINDER_TIME_PASSED)) {
+        if (alarm.hasState(Alarms.Alarm.STATE_ALARMING)) {
+            status.add(context.getString(R.string.activity_alarm_list_alarm_alarming));
+        }
+        else if (alarm.hasState(Alarms.Alarm.STATE_SNOOZED)) {
+            status.add(context.getString(R.string.activity_alarm_list_alarm_snoozed));
+        }
+        else if (alarm.hasState(Alarms.Alarm.STATE_REMINDER_TIME_PASSED)) {
             status.add(context.getString(R.string.activity_alarm_list_alarm_expired));
             on.setEnabled(false);
-        }
-
-        if (alarm.hasState(Alarms.Alarm.STATE_SNOOZED)) {
-            status.add(context.getString(R.string.activity_alarm_list_alarm_snoozed));
         }
 
         if (status.size() > 0) {

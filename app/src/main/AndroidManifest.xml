@@ -5,6 +5,7 @@
     <uses-permission android:name="android.permission.READ_CALENDAR" />
     <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
     <uses-permission android:name="android.permission.WAKE_LOCK" />
+    <uses-permission android:name="android.permission.VIBRATE" />
 
     <application
         android:name=".CalendarApplication"
@@ -25,17 +26,17 @@
             </intent-filter>
         </activity>
         <activity
+            android:name=".SettingsActivity"
             android:parentActivityName=".AlarmListActivity"
             android:launchMode="singleInstance"
-            android:name=".SettingsActivity"
             android:label="@string/title_activity_settings" />
         <activity
-            android:parentActivityName=".SettingsActivity"
             android:name=".PermissionCheckActivity"
+            android:parentActivityName=".SettingsActivity"
             android:launchMode="singleInstance"/>
         <activity
-            android:parentActivityName=".SettingsActivity"
             android:name=".CalendarSelectionActivity"
+            android:parentActivityName=".SettingsActivity"
             android:launchMode="singleInstance"/>
         <activity
             android:parentActivityName=".AlarmListActivity"
@@ -44,10 +45,13 @@
             android:theme="@style/AppTheme.NoActionBar" />
 
         <receiver
-            android:name=".AutoStartReceiver"
+            android:name=".Receiver"
             android:enabled="true">
             <intent-filter>
                 <action android:name="android.intent.action.BOOT_COMPLETED" />
+            </intent-filter>
+           <intent-filter>
+                <action android:name="com.arashdalir.calendaralarm.action.ALARM_SNOOZE" />
             </intent-filter>
         </receiver>
         <receiver android:name=".CalendarChangeReceiver">

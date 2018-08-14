@@ -1,5 +1,12 @@
 package com.arashdalir.calendaralarm;
 
+import android.content.Context;
+import android.database.ContentObserver;
+import android.media.MediaPlayer;
+import android.media.Ringtone;
+import android.media.RingtoneManager;
+import android.net.Uri;
+import android.os.Vibrator;
 import android.util.Log;
 
 import org.json.JSONArray;
@@ -26,13 +33,14 @@ public class Alarms{
 
     private static final String ALARMS_STORAGE_VERSION = "v1";
 
-    public class Alarm {
+    public static class Alarm {
         public static final int STATE_NEW = 0;
         public static final int STATE_STORED = 1;
         public static final int STATE_INACTIVE = 1 << 1;
         public static final int STATE_REMINDER_TIME_PASSED = 1 << 2;
         public static final int STATE_SNOOZED = 1 << 3;
         public static final int STATE_DELETED = 1 << 4;
+        public static final int STATE_ALARMING = 1 << 8;
 
         private String reminderId = null;
         private String ringtone = null;
@@ -45,9 +53,23 @@ public class Alarms{
         private int state = STATE_NEW;
         private boolean markDeleted = false;
 
+        private Vibrator vibrator = null;
+        private MediaPlayer player = null;
+
         Alarm(String id) {
             this.reminderId = id;
             reset();
+        }
+
+        Alarm(JSONObject alm){
+            try{
+                this.reminderId = alm.getString(ALARM_ID);;
+                this.set(alm);
+            }
+            catch(Exception e)
+            {
+
+            }
         }
 
         public int getCalendarId() {
@@ -292,6 +314,87 @@ public class Alarms{
 
         public boolean isDeleted(){
             return isMarkedForDeletion() || hasState(Alarm.STATE_DELETED);
+        }
+
+        public void vibrate(Context context) {
+            if (isVibrate())
+            {
+                vibrator = (Vibrator) context.getSystemService(Context.VIBRATOR_SERVICE);
+
+                if (vibrator.hasVibrator())
+                {
+                    long[] pattern = new long[]{0, 500, 0, 0, 500};
+                    vibrator.vibrate(pattern, 0);
+                }
+            }
+        }
+
+        public void cancelVibrate(){
+
+            if (vibrator != null)
+            {
+                vibrator.cancel();
+            }
+        }
+
+        public void playRingtone(Context context){
+            String ringtone = StorageHelper.getRingtone(context, true);
+            Uri ringtoneUri = Uri.parse(ringtone);
+
+            if (!Uri.EMPTY.equals(ringtoneUri))
+            {
+                player = MediaPlayer.create(context, ringtoneUri);
+                player.setLooping(true);
+                player.start();
+            }
+        }
+
+        public void stopRingtone() {
+            if (this.player != null)
+            {
+                if (this.player.isPlaying())
+                {
+                    this.player.stop();
+                }
+            }
+        }
+
+        public int getCalendarColor(Context context){
+            CalendarHelper.CalendarInfo calendar = CalendarHelper.getCalendarInfo(context, getCalendarId());
+
+            return calendar.getColor();
+        }
+
+        public String getCalendarName(Context context){
+            CalendarHelper.CalendarInfo calendar = CalendarHelper.getCalendarInfo(context, getCalendarId());
+
+            return calendar.getDisplayName();
+        }
+
+        public void stopAlarm() {
+            resetState(STATE_ALARMING);
+            cancelVibrate();
+            stopRingtone();
+        }
+
+        public void startAlarm(Context context) {
+            setState(STATE_ALARMING);
+            vibrate(context);
+            playRingtone(context);
+        }
+
+        public static String getIdFromJSON(JSONObject obj)
+        {
+            String id = null;
+            try{
+                id = obj.getString(ALARM_ID);
+            }
+            catch (Exception e)
+            {
+
+            }
+
+            return id;
         }
     }
 

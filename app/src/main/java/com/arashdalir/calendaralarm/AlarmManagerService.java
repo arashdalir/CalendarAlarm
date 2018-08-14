@@ -62,4 +62,11 @@ public class AlarmManagerService extends JobIntentService {
     protected void onHandleWork(@NonNull Intent intent) {
         serviceHelper.onHandleWork(intent);
     }
+
+    @Override
+    public int onStartCommand(Intent intent, int flags, int startId){
+        serviceHelper.onHandleWork(intent);
+
+        return START_STICKY;
+    }
 }

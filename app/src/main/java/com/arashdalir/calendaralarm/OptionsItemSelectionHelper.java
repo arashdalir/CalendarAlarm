@@ -10,11 +10,8 @@ import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.widget.Toast;
-import android.widget.Toolbar;
 
-import java.text.DateFormat;
 import java.util.Calendar;
-import java.util.Date;
 
 import static android.content.Intent.FLAG_ACTIVITY_REORDER_TO_FRONT;
 
@@ -70,25 +67,32 @@ public class OptionsItemSelectionHelper {
     }
 
     private static void createFakeReminder(final Context context) {
-        AlarmListAdapter adapter = ((CalendarApplication) context.getApplicationContext()).getAdapter(context);
+        final AlarmListAdapter adapter = ((CalendarApplication) context.getApplicationContext()).getAdapter(context);
         Alarms alarms = adapter.getAlarms();
 
         Calendar now = Calendar.getInstance();
         Calendar reminder = (Calendar) now.clone();
         reminder.set(Calendar.MILLISECOND, 0);
         reminder.set(Calendar.SECOND, 0);
-        Alarms.Alarm alarm = alarms.getAlarm(String.format("fake-%d", reminder.getTimeInMillis()));
+        Alarms.Alarm alarm = alarms.find(String.format("fake-%d", reminder.getTimeInMillis()));
         reminder.add(Calendar.MINUTE, 2);
-        Calendar event = (Calendar) now.clone();
-        event.add(Calendar.MINUTE, 5);
+        Calendar event = (Calendar) reminder.clone();
+        event.add(Calendar.MINUTE, 3);
 
         alarm.set(-1, "Fake Alarm", reminder, event, StorageHelper.getRingtone(context), StorageHelper.getVibrate(context));
         alarms.sort();
-        adapter.notifyItemInserted(alarms.getAlarmPosition(alarm));
+
+        Activity a = (Activity)context;
+        a.runOnUiThread(new Runnable() {
+            public void run() {
+                adapter.notifyDataSetChanged();
+            }
+        });
     }
 
 
     private static void resetStoredEvents(final Context context) {
+        final Activity a = (Activity) context;
         new AlertDialog.Builder(context)
                 .setTitle(R.string.menu_reset_title)
                 .setMessage(R.string.menu_reset_title_description)
@@ -97,10 +101,21 @@ public class OptionsItemSelectionHelper {
                         android.R.string.yes,
                         new DialogInterface.OnClickListener() {
                             public void onClick(DialogInterface dialog, int whichButton) {
-                                Notifier.showToast(context, context.getString(R.string.menu_reset_initiated), Toast.LENGTH_LONG);
-                                AlarmListAdapter adapter = ((CalendarApplication) context.getApplicationContext()).getAdapter(context);
+                                Notifier.showToast(context, context.getString(R.string.menu_reset_initiated), Toast.LENGTH_SHORT);
+                                final AlarmListAdapter adapter = ((CalendarApplication) context.getApplicationContext()).getAdapter(context);
                                 adapter.getAlarms().clear();
-                                adapter.notifyDataSetChanged();
+                                Notifier.showToast(context, context.getString(R.string.menu_reset_finished), Toast.LENGTH_LONG);
+
+                                a.runOnUiThread(new Runnable() {
+                                    public void run() {
+                                        adapter.notifyDataSetChanged();
+                                    }
+                                });
+
+                                Intent i = new Intent();
+                                i.setAction(ServiceHelper.ACTION_READ_REMINDERS);
+
+                                AlarmManagerService.enqueueWork(context, i);
                             }
                         })
                 .setNegativeButton(android.R.string.no, null).show();

@@ -58,22 +58,13 @@ public class AlarmListActivity extends AppCompatActivity implements AlarmsTouchH
         super.onDestroy();
     }
 
-    void observeService(){
+    void observeService() {
         ServiceHelper.observeAdapter().addObserver(new Observer() {
             @Override
             public void update(Observable o, final Object arg) {
-                new Thread(){
-                    public void run(){
-                        runOnUiThread(new Runnable() {
-                            @Override
-                            public void run() {
-                                AlarmListAdapter adapter = (AlarmListAdapter) arg;
-                                adapter.checkTimes();
-                                drawView(adapter);
-                            }
-                        });
-                    }
-                };
+                AlarmListAdapter adapter = (AlarmListAdapter) arg;
+                adapter.checkTimes();
+                drawView(adapter);
             }
         });
     }
@@ -152,6 +143,11 @@ public class AlarmListActivity extends AppCompatActivity implements AlarmsTouchH
                                 public void onClick(DialogInterface dialog, int whichButton) {
                                     // remove the item from recycler view
                                     adapter.removeItem(deletedIndex);
+                                    runOnUiThread(new Runnable() {
+                                        public void run() {
+                                            adapter.notifyDataSetChanged();
+                                        }
+                                    });
 
                                     // showing snack bar with Undo option
                                     Notifier.snackBarAction action = new Notifier.snackBarAction();
@@ -162,6 +158,11 @@ public class AlarmListActivity extends AppCompatActivity implements AlarmsTouchH
 
                                             // undo is selected, restore the deleted item
                                             adapter.restoreItem(deletedItem);
+                                            runOnUiThread(new Runnable() {
+                                                public void run() {
+                                                    adapter.notifyDataSetChanged();
+                                                }
+                                            });
                                         }
                                     };
                                     action.actionTextColor = Color.YELLOW;
@@ -179,7 +180,11 @@ public class AlarmListActivity extends AppCompatActivity implements AlarmsTouchH
                     .setNegativeButton(android.R.string.no, new DialogInterface.OnClickListener() {
                         public void onClick(DialogInterface dialog, int whichButton) {
                             // remove the item from recycler view
-                            adapter.notifyDataSetChanged();
+                            runOnUiThread(new Runnable() {
+                                public void run() {
+                                    adapter.notifyDataSetChanged();
+                                }
+                            });
                         }
                     })
                     .setCancelable(false)

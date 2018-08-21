@@ -1,7 +1,6 @@
 package com.arashdalir.calendaralarm;
 
 import android.content.Context;
-import android.graphics.Color;
 import android.support.v7.widget.RecyclerView;
 import android.text.TextUtils;
 import android.view.LayoutInflater;
@@ -21,15 +20,7 @@ public class AlarmListAdapter
     private static Alarms alarms = null;
     private Context context;
 
-    public boolean checkTimes() {
-        boolean status = alarms.checkTimes();
-        StorageHelper.storeAlarms(context, alarms.asJsonArray());
-
-        return status;
-    }
-
     public static class ViewHolder extends RecyclerView.ViewHolder {
-        // each data item is just a string in this case
         View alarmView;
 
         ViewHolder(View v) {
@@ -54,11 +45,7 @@ public class AlarmListAdapter
     }
 
     public Alarms.Alarm getItem(int position) {
-        if (position < this.getItemCount()) {
-            return alarms.getAlarm(position);
-        } else {
-            return null;
-        }
+        return alarms.getByPosition(position);
     }
 
     @Override
@@ -69,7 +56,12 @@ public class AlarmListAdapter
 
     @Override
     public void onBindViewHolder(ViewHolder holder, int position) {
-        final Alarms.Alarm alarm = alarms.getAlarm(position);
+        final Alarms.Alarm alarm = alarms.getByPosition(position);
+
+        if (alarm == null)
+        {
+            return;
+        }
 
         DateFormat df = android.text.format.DateFormat.getDateFormat(context);
         DateFormat tf = android.text.format.DateFormat.getTimeFormat(context);
@@ -113,7 +105,6 @@ public class AlarmListAdapter
             }
         });
 
-
         ArrayList<String> status = new ArrayList<>();
 
         if (alarm.hasState(Alarms.Alarm.STATE_ALARMING)) {
@@ -138,14 +129,12 @@ public class AlarmListAdapter
 
         if (alarm != null) {
             if (alarms.delete(position, alarm)) {
-                notifyDataSetChanged();
             }
         }
     }
 
     void restoreItem(Alarms.Alarm alarm) {
-        alarms.getAlarm(alarm.getReminderId()).set(alarm);
-        notifyDataSetChanged();
+        alarms.find(alarm.getReminderId()).set(alarm);
     }
 
     @Override
@@ -159,5 +148,20 @@ public class AlarmListAdapter
 
     public void storeData(Context context) {
         StorageHelper.storeAlarms(context, alarms.asJsonArray());
+    }
+
+    public boolean checkTimes() {
+        boolean status = alarms.checkTimes();
+        StorageHelper.storeAlarms(context, alarms.asJsonArray());
+
+        return status;
+    }
+
+    public Alarms.Alarm getAlarm(String reminderId) {
+        return this.getAlarm(reminderId, true);
+    }
+
+    public Alarms.Alarm getAlarm(String reminderId, boolean createIfNotExists) {
+        return this.getAlarms().find(reminderId, createIfNotExists);
     }
 }

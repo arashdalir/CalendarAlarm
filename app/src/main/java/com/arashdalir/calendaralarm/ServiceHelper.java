@@ -25,6 +25,7 @@ public class ServiceHelper {
     public static final String ACTION_START_SERVICE = "com.arashdalir.calendaralarm.action.START_SERVICE";
     public static final String ACTION_REMINDER_SNOOZE = "com.arashdalir.calendaralarm.action.REMINDER_SNOOZE";
     public static final String ACTION_REMINDER_CANCEL = "com.arashdalir.calendaralarm.action.REMINDER_CANCEL";
+    public static final String ACTION_READ_REMINDERS = "com.arashdalir.calendaralarm.action.READ_REMINDERS";
 
     public static final String EXTRA_SNOOZE_ALARM = "alarm";
     private static Observable obAdapter = null;
@@ -44,8 +45,7 @@ public class ServiceHelper {
     }
 
     public void onHandleWork(Intent intent) {
-        if (intent == null)
-        {
+        if (intent == null) {
             return;
         }
 
@@ -57,10 +57,12 @@ public class ServiceHelper {
                 } else if (ServiceHelper.ACTION_SET_WAKEUP_TIMERS.equals(action)) {
                     handleSetupTimers();
                 } else if (ServiceHelper.ACTION_START_SERVICE.equals(action)) {
+                    handleStartService();
+                } else if (ServiceHelper.ACTION_READ_REMINDERS.equals(action)) {
                     handleReadReminders();
                 } else if (
                         ServiceHelper.ACTION_REMINDER_SNOOZE.equals(action) ||
-                        ServiceHelper.ACTION_REMINDER_CANCEL.equals(action)
+                                ServiceHelper.ACTION_REMINDER_CANCEL.equals(action)
                         ) {
                     handleSnooze(intent, action);
                 }
@@ -72,15 +74,22 @@ public class ServiceHelper {
         }
     }
 
+    private void handleStartService() {
+        handleReadReminders();
+    }
+
     private void handleSnooze(Intent intent, String action) {
         CalendarApplication app = (CalendarApplication) context.getApplicationContext();
         AlarmListAdapter adapter = app.getAdapter(context);
         Alarms.Alarm alarm = getAlarmByIntent(context, intent);
 
+        if (alarm == null) {
+            return;
+        }
+
         alarm.stopAlarm();
         int state = 0;
-        switch (action)
-        {
+        switch (action) {
             case ServiceHelper.ACTION_REMINDER_SNOOZE:
                 state = Alarms.Alarm.STATE_SNOOZED;
                 break;
@@ -91,8 +100,7 @@ public class ServiceHelper {
 
         }
 
-        if (state != 0)
-        {
+        if (state != 0) {
             alarm.setState(state);
             adapter.storeData(context);
             Notifier.cancelNotification(context, Notifier.NOTIFY_SNOOZE);
@@ -139,6 +147,10 @@ public class ServiceHelper {
             for (int i = 0; i < adapter.getItemCount(); i++) {
                 boolean createTimer = false;
                 Alarms.Alarm alarm = adapter.getItem(i);
+
+                if (alarm == null) {
+                    continue;
+                }
 
                 createTimer = alarm.checkTimes();
 
@@ -206,13 +218,11 @@ public class ServiceHelper {
     public static void doAlarm(Context context, Intent intent) {
         Alarms.Alarm alarm = getAlarmByIntent(context, intent);
 
-        if (alarm == null)
-        {
+        if (alarm == null) {
             return;
         }
 
-        if (alarm.hasState(Alarms.Alarm.STATE_INACTIVE) || alarm.hasState(Alarms.Alarm.STATE_DELETED))
-        {
+        if (alarm.hasState(Alarms.Alarm.STATE_INACTIVE) || alarm.hasState(Alarms.Alarm.STATE_DELETED)) {
             return;
         }
 
@@ -250,15 +260,12 @@ public class ServiceHelper {
             JSONObject alm = new JSONObject(intent.getStringExtra(ServiceHelper.EXTRA_SNOOZE_ALARM));
 
             String reminderId = Alarms.Alarm.getIdFromJSON(alm);
-            Alarms alarms = adapter.getAlarms();
-            if (!alarms.alarmExists(reminderId))
-            {
-                alarm = alarms.getAlarm(reminderId).set(alm);
+            alarm = adapter.getAlarm(reminderId, false);
+
+            if (alarm != null) {
+                alarm = adapter.getAlarm(reminderId).set(alm);
             }
-            else
-            {
-                alarm = alarms.getAlarm(reminderId);
-            }
+
         } catch (Exception e) {
 
         }
@@ -310,7 +317,7 @@ public class ServiceHelper {
 
                             if (!adapter.alarmExists(reminderId)) {
 
-                                adapter.getAlarms().getAlarm(reminderId)
+                                adapter.getAlarm(reminderId)
                                         .set(
                                                 calendarId,
                                                 eventTitle,

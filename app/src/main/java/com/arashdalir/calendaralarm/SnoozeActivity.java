@@ -2,11 +2,7 @@ package com.arashdalir.calendaralarm;
 
 import android.os.Bundle;
 import android.support.constraint.ConstraintLayout;
-import android.support.design.widget.FloatingActionButton;
-import android.support.design.widget.Snackbar;
 import android.support.v7.app.AppCompatActivity;
-import android.support.v7.widget.Toolbar;
-import android.view.View;
 import android.widget.TextView;
 
 public class SnoozeActivity extends AppCompatActivity {
@@ -25,7 +21,7 @@ public class SnoozeActivity extends AppCompatActivity {
 
         String reminderId = action.replace("snooze-", "");
 
-        Alarms.Alarm alarm = adapter.getAlarms().getAlarm(reminderId);
+        Alarms.Alarm alarm = adapter.getAlarms().find(reminderId);
 
         if (alarm != null)
         {

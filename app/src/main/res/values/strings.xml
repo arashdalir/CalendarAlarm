@@ -75,4 +75,6 @@
     <string name="create_fake_reminder">Create Fake Reminder</string>
     <string name="notification_message_alarming">Alarming %s</string>
     <string name="activity_alarm_list_alarm_alarming">Being alarmed</string>
+    <string name="menu_reset_finished">Event list is reset.</string>
+    <string name="notification_toast_reminders_created">Reminders added for alarms.</string>
 </resources>

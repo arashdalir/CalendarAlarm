@@ -7,6 +7,7 @@ import android.database.ContentObserver;
 import android.os.Handler;
 import android.provider.CalendarContract;
 import android.support.v7.widget.RecyclerView;
+import android.widget.Toast;
 
 import org.json.JSONArray;
 
@@ -37,8 +38,10 @@ public class CalendarApplication extends Application {
 
         adapter.registerAdapterDataObserver(new RecyclerView.AdapterDataObserver() {
             @Override
-            public void onItemRangeInserted(int positionStart, int itemCount) {
-                AlarmManagerService.enqueueWork(getApplicationContext(), ServiceHelper.ACTION_CHECK_REMINDER_ALARMS);
+            public void onChanged() {
+                Context context = getApplicationContext();
+                AlarmManagerService.enqueueWork(context, ServiceHelper.ACTION_CHECK_REMINDER_ALARMS);
+                Notifier.showToast(context, context.getString(R.string.notification_toast_reminders_created), Toast.LENGTH_SHORT);
             }
         });
 

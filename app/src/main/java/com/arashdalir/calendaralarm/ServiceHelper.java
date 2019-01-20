@@ -162,9 +162,10 @@ class ServiceHelper {
     private void handleCreateNotificationAlarms() {
         AlarmListAdapter adapter = ((CalendarApplication) context.getApplicationContext()).getAdapter(context);
 
-        if (adapter.getItemCount() > 0) {
-            for (int i = 0; i < adapter.getItemCount(); i++) {
-                Alarms.Alarm alarm = adapter.getItem(i);
+        int alarmCount = adapter.getItemCount();
+        if (alarmCount > 0) {
+            for (int i = 0; i < alarmCount; i++) {
+                Alarms.Alarm alarm = adapter.getItem(i, true);
 
                 if (alarm == null) {
                     continue;

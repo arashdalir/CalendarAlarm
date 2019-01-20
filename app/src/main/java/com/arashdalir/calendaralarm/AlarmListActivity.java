@@ -129,10 +129,10 @@ public class AlarmListActivity extends AppCompatActivity implements AlarmsTouchH
             final AlarmListAdapter adapter = ((CalendarApplication) getApplication()).getAdapter(this);
             // get the removed item name to display it in snack bar
             final int deletedIndex = viewHolder.getAdapterPosition();
-            final String name = adapter.getItem(deletedIndex).getTitle();
+            final String name = adapter.getItem(deletedIndex, false).getTitle();
 
             // backup of removed item for undo purpose
-            final Alarms.Alarm deletedItem = adapter.getItem(deletedIndex);
+            final Alarms.Alarm deletedItem = adapter.getItem(deletedIndex, false);
             final Context context = this.getApplicationContext();
             AlertDialog.Builder dialog = new AlertDialog.Builder(this);
 

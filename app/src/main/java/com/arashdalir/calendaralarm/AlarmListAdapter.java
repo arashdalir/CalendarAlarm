@@ -1,11 +1,19 @@
 package com.arashdalir.calendaralarm;
 
+import android.content.ContentUris;
 import android.content.Context;
+import android.content.Intent;
+import android.net.Uri;
+import android.provider.CalendarContract;
+import android.support.constraint.ConstraintLayout;
+import android.support.constraint.ConstraintSet;
+import android.support.constraint.Constraints;
 import android.support.v7.widget.RecyclerView;
 import android.text.TextUtils;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
 import android.widget.CompoundButton;
 import android.widget.Switch;
 import android.widget.TextView;
@@ -56,12 +64,7 @@ public class AlarmListAdapter
 
     @Override
     public void onBindViewHolder(ViewHolder holder, int position) {
-        final Alarms.Alarm alarm = alarms.getByPosition(position);
-
-        if (alarm == null)
-        {
-            return;
-        }
+        final Alarms.Alarm alarm = alarms.getByPosition(position, true);
 
         DateFormat df = android.text.format.DateFormat.getDateFormat(context);
         DateFormat tf = android.text.format.DateFormat.getTimeFormat(context);
@@ -73,7 +76,35 @@ public class AlarmListAdapter
         TextView vEventTime = holder.alarmView.findViewById(R.id.alarm_event_time);
         TextView vReminderTime = holder.alarmView.findViewById(R.id.alarm_reminder_time);
         TextView calendarName = holder.alarmView.findViewById(R.id.alarm_calendar);
-        TextView statusLine = holder.alarmView.findViewById(R.id.alarm_status_line);
+        ConstraintLayout alarmItem = holder.alarmView.findViewById(R.id.alarm_list_cl_alarm_item);
+        ConstraintLayout alarmDetails = holder.alarmView.findViewById(R.id.alarm_details);
+
+        View lastItem = (View) alarmDetails;
+
+        if (alarm.getEventId() != 0)
+        {
+            Button viewInCalendar = new Button(context);
+            viewInCalendar.setId(View.generateViewId());
+            viewInCalendar.setText(R.string.activity_alarm_list_view_in_calendar);
+
+            lastItem = (View) viewInCalendar;
+
+            Constraints.LayoutParams lp = new Constraints.LayoutParams(Constraints.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
+            alarmItem.addView(viewInCalendar, lp);
+            ConstraintSet cs = new ConstraintSet();
+            cs.clone(alarmItem);
+            cs.connect(viewInCalendar.getId(), ConstraintSet.TOP, alarmDetails.getId(), ConstraintSet.BOTTOM);
+            cs.applyTo(alarmItem);
+
+            viewInCalendar.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    Uri eventUri = ContentUris.withAppendedId(CalendarContract.Events.CONTENT_URI, alarm.getEventId());
+                    Intent calenderEvent = new Intent(Intent.ACTION_VIEW, eventUri);
+                    context.startActivity(calenderEvent);
+                }
+            });
+        }
 
         calendarName.setText(context.getString(R.string.activity_alarm_list_alarm_calendar, alarm.getCalendarName(context)));
         calendarName.setTextColor(alarm.getCalendarColor(context));
@@ -119,6 +150,16 @@ public class AlarmListAdapter
         }
 
         if (status.size() > 0) {
+            TextView statusLine = new TextView(context);
+            statusLine.setId(View.generateViewId());
+
+            Constraints.LayoutParams lp = new Constraints.LayoutParams(Constraints.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
+            alarmItem.addView(statusLine, lp);
+            ConstraintSet cs = new ConstraintSet();
+            cs.clone(alarmItem);
+            cs.connect(statusLine.getId(), ConstraintSet.TOP, lastItem.getId(), ConstraintSet.BOTTOM);
+            cs.applyTo(alarmItem);
+
             statusLine.setText(TextUtils.join("\n", status));
             statusLine.setVisibility(View.VISIBLE);
         }
@@ -146,22 +187,22 @@ public class AlarmListAdapter
         return alarms;
     }
 
-    public void storeData(Context context) {
+    void storeData(Context context) {
         StorageHelper.storeAlarms(context, alarms.asJsonArray());
     }
 
-    public boolean checkTimes() {
+    boolean checkTimes() {
         boolean status = alarms.checkTimes();
         StorageHelper.storeAlarms(context, alarms.asJsonArray());
 
         return status;
     }
 
-    public Alarms.Alarm getAlarm(String reminderId) {
+    Alarms.Alarm getAlarm(String reminderId) {
         return this.getAlarm(reminderId, true);
     }
 
-    public Alarms.Alarm getAlarm(String reminderId, boolean createIfNotExists) {
+    Alarms.Alarm getAlarm(String reminderId, boolean createIfNotExists) {
         return this.getAlarms().find(reminderId, createIfNotExists);
     }
 }

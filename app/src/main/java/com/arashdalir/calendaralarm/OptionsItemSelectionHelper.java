@@ -79,7 +79,7 @@ public class OptionsItemSelectionHelper {
         Calendar event = (Calendar) reminder.clone();
         event.add(Calendar.MINUTE, 3);
 
-        alarm.set(-1, "Fake Alarm", reminder, event, StorageHelper.getRingtone(context), StorageHelper.getVibrate(context));
+        alarm.set(-1, "Fake Alarm", reminder, event, StorageHelper.getRingtone(context), StorageHelper.getVibrate(context), 0);
         alarms.sort();
 
         Activity a = (Activity)context;
@@ -113,7 +113,7 @@ public class OptionsItemSelectionHelper {
                                 });
 
                                 Intent i = new Intent();
-                                i.setAction(ServiceHelper.ACTION_READ_REMINDERS);
+                                i.setAction(ServiceHelper.ACTION_START_SERVICE);
 
                                 AlarmManagerService.enqueueWork(context, i);
                             }

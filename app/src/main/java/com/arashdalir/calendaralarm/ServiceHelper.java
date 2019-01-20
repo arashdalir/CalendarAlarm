@@ -5,7 +5,9 @@ import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
 import android.database.Cursor;
+import android.os.Build;
 import android.provider.CalendarContract;
+import android.support.annotation.RequiresApi;
 import android.support.v4.app.NotificationCompat;
 import android.util.Log;
 
@@ -19,15 +21,14 @@ import java.util.Observable;
 
 import static android.content.Intent.FLAG_ACTIVITY_REORDER_TO_FRONT;
 
-public class ServiceHelper {
-    public static final String ACTION_SET_WAKEUP_TIMERS = "com.arashdalir.calendaralarm.action.SET_WAKEUP_TIMERS";
-    public static final String ACTION_CHECK_REMINDER_ALARMS = "com.arashdalir.calendaralarm.action.MODIFY_REMINDER_ALARMS";
-    public static final String ACTION_START_SERVICE = "com.arashdalir.calendaralarm.action.START_SERVICE";
-    public static final String ACTION_REMINDER_SNOOZE = "com.arashdalir.calendaralarm.action.REMINDER_SNOOZE";
-    public static final String ACTION_REMINDER_CANCEL = "com.arashdalir.calendaralarm.action.REMINDER_CANCEL";
-    public static final String ACTION_READ_REMINDERS = "com.arashdalir.calendaralarm.action.READ_REMINDERS";
+class ServiceHelper {
+    static final String ACTION_CHECK_REMINDER_ALARMS = "com.arashdalir.calendaralarm.action.MODIFY_REMINDER_ALARMS";
+    static final String ACTION_START_SERVICE = "com.arashdalir.calendaralarm.action.START_SERVICE";
+    static final String ACTION_REMINDER_SNOOZE = "com.arashdalir.calendaralarm.action.REMINDER_SNOOZE";
+    static final String ACTION_REMINDER_CANCEL = "com.arashdalir.calendaralarm.action.REMINDER_CANCEL";
+    static final String ACTION_CREATE_HOURLY_CHECK = "com.arashdalir.calendaralarm.action.CREATE_HOURLY_CHECK";
 
-    public static final String EXTRA_SNOOZE_ALARM = "alarm";
+    static final String EXTRA_SNOOZE_ALARM = "alarm";
     private static Observable obAdapter = null;
 
     private Context context;
@@ -44,7 +45,8 @@ public class ServiceHelper {
         this.context = context;
     }
 
-    public void onHandleWork(Intent intent) {
+    @RequiresApi(api = Build.VERSION_CODES.KITKAT)
+    void onHandleWork(Intent intent) {
         if (intent == null) {
             return;
         }
@@ -53,18 +55,16 @@ public class ServiceHelper {
             if (StorageHelper.getCalendars(context).length > 0) {
                 final String action = intent.getAction();
                 if (ServiceHelper.ACTION_CHECK_REMINDER_ALARMS.equals(action)) {
-                    handleAlarmReminders();
-                } else if (ServiceHelper.ACTION_SET_WAKEUP_TIMERS.equals(action)) {
-                    handleSetupTimers();
+                    handleCreateNotificationAlarms();
                 } else if (ServiceHelper.ACTION_START_SERVICE.equals(action)) {
                     handleStartService();
-                } else if (ServiceHelper.ACTION_READ_REMINDERS.equals(action)) {
-                    handleReadReminders();
                 } else if (
                         ServiceHelper.ACTION_REMINDER_SNOOZE.equals(action) ||
                                 ServiceHelper.ACTION_REMINDER_CANCEL.equals(action)
                         ) {
                     handleSnooze(intent, action);
+                } else if (ServiceHelper.ACTION_CREATE_HOURLY_CHECK.equals(action)) {
+                    handleHourlyCheck();
                 }
             } else {
                 handlerNoCalendar();
@@ -74,10 +74,30 @@ public class ServiceHelper {
         }
     }
 
-    private void handleStartService() {
-        handleReadReminders();
+    private void handleHourlyCheck() {
+        AlarmManager am = (AlarmManager) context.getSystemService(AlarmManagerService.ALARM_SERVICE);
+
+        Intent hourlyCheck = new Intent(context, AlarmManagerService.class);
+        hourlyCheck.setAction(ServiceHelper.ACTION_START_SERVICE);
+
+        PendingIntent pi = PendingIntent.getBroadcast(context, 1, hourlyCheck, PendingIntent.FLAG_NO_CREATE);
+
+        try {
+            if (pi == null) {
+                if (am != null) {
+                    Calendar timer = Calendar.getInstance();
+                    //timer.add(Calendar.HOUR, 1);
+                    timer.add(Calendar.MINUTE, 1);
+                    pi = PendingIntent.getBroadcast(context, 1, hourlyCheck, PendingIntent.FLAG_NO_CREATE);
+                    am.setExact(AlarmManager.RTC_WAKEUP, timer.getTimeInMillis(), pi);
+                }
+            }
+        } catch (Exception e) {
+
+        }
     }
 
+    @RequiresApi(api = Build.VERSION_CODES.KITKAT)
     private void handleSnooze(Intent intent, String action) {
         CalendarApplication app = (CalendarApplication) context.getApplicationContext();
         AlarmListAdapter adapter = app.getAdapter(context);
@@ -88,14 +108,17 @@ public class ServiceHelper {
         }
 
         alarm.stopAlarm();
+
         int state = 0;
         switch (action) {
             case ServiceHelper.ACTION_REMINDER_SNOOZE:
                 state = Alarms.Alarm.STATE_SNOOZED;
+                alarm.getReminderTime().add(Calendar.SECOND, 30);
+                createNotificationAlarm(alarm, context);
                 break;
 
             case ServiceHelper.ACTION_REMINDER_CANCEL:
-                state = Alarms.Alarm.STATE_DELETED;
+                state = Alarms.Alarm.STATE_REMINDER_TIME_PASSED;
                 break;
 
         }
@@ -106,70 +129,75 @@ public class ServiceHelper {
             Notifier.cancelNotification(context, Notifier.NOTIFY_SNOOZE);
         }
 
-        handleAlarmReminders();
+        handleCreateNotificationAlarms();
     }
 
     private void handleNoPermission() {
         Intent permissionsIntent = new Intent(context, PermissionCheckActivity.class).setFlags(FLAG_ACTIVITY_REORDER_TO_FRONT);
-        PendingIntent pIntent = PendingIntent.getActivity(context, 0, permissionsIntent, 0);
+        PendingIntent pIntent = PendingIntent.getActivity(context, 2, permissionsIntent, 0);
 
-        Notifier.getBuilder(context)
+        NotificationCompat.Builder builder = Notifier.getBuilder(context)
                 .setContentTitle(context.getString(R.string.notification_message_permission_missing_title))
                 .setContentText(context.getString(R.string.notification_message_permissions_missing_description))
                 .setContentIntent(pIntent)
                 .setAutoCancel(true);
 
-        Notifier.notify(context, Notifier.NOTIFY_PERMISSIONS_MISSING, NotificationCompat.PRIORITY_MAX);
+        Notifier.notify(context, builder, Notifier.NOTIFY_PERMISSIONS_MISSING, NotificationCompat.PRIORITY_MAX);
     }
 
     private void handlerNoCalendar() {
         Intent calendarSelectionIntent = new Intent(context, CalendarSelectionActivity.class).setFlags(FLAG_ACTIVITY_REORDER_TO_FRONT);
-        PendingIntent pIntent = PendingIntent.getActivity(context, 0, calendarSelectionIntent, 0);
+        PendingIntent pIntent = PendingIntent.getActivity(context, 3, calendarSelectionIntent, 0);
 
-        Notifier.getBuilder(context)
+        NotificationCompat.Builder builder = Notifier.getBuilder(context)
                 .setContentTitle(context.getString(R.string.notification_message_no_calendars_selected))
                 .setContentText(context.getString(R.string.notification_message_no_calendars_selected_description))
                 .setContentIntent(pIntent)
                 .setAutoCancel(true);
 
-        Notifier.notify(context, Notifier.NOTIFY_GENERAL, NotificationCompat.PRIORITY_MAX);
+        Notifier.notify(context, builder, Notifier.NOTIFY_GENERAL, NotificationCompat.PRIORITY_MAX);
     }
 
-    private void handleSetupTimers() {
-
-    }
-
-    private void handleAlarmReminders() {
-        AlarmManager am = (AlarmManager) context.getSystemService(AlarmManagerService.ALARM_SERVICE);
+    @RequiresApi(api = Build.VERSION_CODES.KITKAT)
+    private void handleCreateNotificationAlarms() {
         AlarmListAdapter adapter = ((CalendarApplication) context.getApplicationContext()).getAdapter(context);
 
         if (adapter.getItemCount() > 0) {
             for (int i = 0; i < adapter.getItemCount(); i++) {
-                boolean createTimer = false;
                 Alarms.Alarm alarm = adapter.getItem(i);
 
                 if (alarm == null) {
                     continue;
                 }
 
-                createTimer = alarm.checkTimes();
-
-                PendingIntent pi = getSnoozeIntent(alarm, false);
-
-                try {
-                    if (createTimer) {
-                        if (pi == null) {
-                            pi = getSnoozeIntent(alarm, true);
-                            am.setExact(AlarmManager.RTC_WAKEUP, alarm.getReminderTime().getTimeInMillis(), pi);
-                        }
-                    } else if (pi != null) {
-                        am.cancel(pi);
-                    }
-                } catch (Exception e) {
-
-                }
+                createNotificationAlarm(alarm, context);
             }
             adapter.storeData(context.getApplicationContext());
+        }
+    }
+
+    @RequiresApi(api = Build.VERSION_CODES.KITKAT)
+    private void createNotificationAlarm(Alarms.Alarm alarm, Context context) {
+        AlarmManager am = (AlarmManager) context.getSystemService(AlarmManagerService.ALARM_SERVICE);
+        boolean createTimer = alarm.checkTimes();
+
+        PendingIntent pi = getSnoozeIntent(alarm, false);
+
+        try {
+            if (createTimer) {
+                if (pi == null) {
+                    pi = getSnoozeIntent(alarm, true);
+                    if (am != null) {
+                        am.setExact(AlarmManager.RTC_WAKEUP, alarm.getReminderTime().getTimeInMillis(), pi);
+                    }
+                }
+            } else if (pi != null) {
+                if (am != null) {
+                    am.cancel(pi);
+                }
+            }
+        } catch (Exception e) {
+
         }
     }
 
@@ -193,11 +221,12 @@ public class ServiceHelper {
      * parameters.
      */
 
-    private void handleReadReminders() {
+    @RequiresApi(api = Build.VERSION_CODES.KITKAT)
+    private void handleStartService() {
         Intent appIntent = new Intent(context, AlarmListActivity.class).setFlags(FLAG_ACTIVITY_REORDER_TO_FRONT);
-        PendingIntent pi = PendingIntent.getActivity(context, 0, appIntent, 0);
+        PendingIntent pi = PendingIntent.getActivity(context, 4, appIntent, 0);
 
-        Notifier.getBuilder(context)
+        NotificationCompat.Builder builder = Notifier.getBuilder(context)
                 .setContentTitle(context.getString(R.string.notification_message_service_started))
                 .setContentIntent(pi)
                 .setContentText(
@@ -207,15 +236,16 @@ public class ServiceHelper {
                         )
                 );
 
-        Notifier.notify(context, Notifier.NOTIFY_GENERAL, NotificationCompat.PRIORITY_HIGH);
+        Notifier.notify(context, builder, Notifier.NOTIFY_GENERAL, NotificationCompat.PRIORITY_HIGH);
 
         Log.i(context.getClass().toString(), "Alarm Manager Service Started.");
 
-        readEventAlarms();
-        handleAlarmReminders();
+        readNotifications();
+        handleCreateNotificationAlarms();
+        handleHourlyCheck();
     }
 
-    public static void doAlarm(Context context, Intent intent) {
+    static void doAlarm(Context context, Intent intent) {
         Alarms.Alarm alarm = getAlarmByIntent(context, intent);
 
         if (alarm == null) {
@@ -229,27 +259,8 @@ public class ServiceHelper {
         AlarmListAdapter adapter = ((CalendarApplication) context.getApplicationContext()).getAdapter(context);
         alarm.startAlarm(context);
 
+        Notifier.showSnooze(context, alarm);
         adapter.storeData(context);
-
-        Intent snooze = new Intent(context, AlarmManagerService.class);
-        snooze.setAction(ServiceHelper.ACTION_REMINDER_SNOOZE);
-        snooze.putExtra(ServiceHelper.EXTRA_SNOOZE_ALARM, alarm.toJSON().toString());
-        PendingIntent pSnooze = PendingIntent.getService(context, (int) System.currentTimeMillis(), snooze, 0);
-
-        Intent cancel = new Intent(context, AlarmManagerService.class);
-        cancel.setAction(ServiceHelper.ACTION_REMINDER_CANCEL);
-        cancel.putExtra(ServiceHelper.EXTRA_SNOOZE_ALARM, alarm.toJSON().toString());
-        PendingIntent pCancel = PendingIntent.getService(context, (int) System.currentTimeMillis(), cancel, 0);
-
-        Notifier.getBuilder(context)
-                .setContentTitle(context.getString(R.string.notification_message_alarming, alarm.getTitle()))
-                .setContentText(alarm.getCalendarName(context))
-                .setColor(alarm.getCalendarColor(context))
-                .setOngoing(true)
-                .setSound(null)
-                .addAction(R.drawable.ic_info_black_24dp, context.getString(R.string.activity_snooze_snooze), pSnooze)
-                .addAction(R.drawable.ic_info_black_24dp, context.getString(R.string.activity_snooze_cancel), pCancel);
-        Notifier.notify(context, Notifier.NOTIFY_SNOOZE, NotificationCompat.PRIORITY_MAX);
     }
 
     private static Alarms.Alarm getAlarmByIntent(Context context, Intent intent) {
@@ -274,8 +285,13 @@ public class ServiceHelper {
     }
 
 
-    private void readEventAlarms() {
-        Cursor cursor = CalendarHelper.readEvents(context);
+    private void readNotifications() {
+        Calendar now = Calendar.getInstance();
+        long beginms = now.getTimeInMillis();
+        now.add(Calendar.DATE, 7);
+        long endms = now.getTimeInMillis();
+
+        Cursor cursor = CalendarHelper.readEvents(context, beginms, endms);
         AlarmListAdapter adapter = ((CalendarApplication) context.getApplicationContext()).getAdapter(context);
 
         Integer[] allowedMethods = new Integer[]{
@@ -291,14 +307,14 @@ public class ServiceHelper {
         if (cursor.moveToFirst()) {
             do {
                 int calendarId = cursor.getInt(cursor.getColumnIndex(CalendarContract.Reminders.CALENDAR_ID));
+                Long beginTime = cursor.getLong(cursor.getColumnIndex(CalendarContract.Instances.BEGIN));
 
-                if (!calendars.contains(calendarId)) {
+                if (!calendars.contains(calendarId) || beginms > beginTime) {
                     continue;
                 }
 
                 int eventId = cursor.getInt(cursor.getColumnIndex(CalendarContract.Instances.EVENT_ID));
                 String eventTitle = cursor.getString(cursor.getColumnIndex(CalendarContract.Instances.TITLE));
-                Long beginTime = cursor.getLong(cursor.getColumnIndex(CalendarContract.Instances.BEGIN));
 
                 Cursor rc = CalendarHelper.readReminders(context, eventId);
 
@@ -324,7 +340,8 @@ public class ServiceHelper {
                                                 reminderTime,
                                                 eventTime,
                                                 ringtone,
-                                                vibrate
+                                                vibrate,
+                                                eventId
                                         );
                             }
                         }
@@ -341,27 +358,29 @@ public class ServiceHelper {
         Alarms.AlarmsStati status = adapter.getAlarms().filterCalendars(calendars);
 
         if (status.getTotal() > 0) {
+            NotificationCompat.Builder builder = Notifier.getBuilder(context);
+            Intent mainIntent = new Intent(context, AlarmListActivity.class).setFlags(FLAG_ACTIVITY_REORDER_TO_FRONT);
+            PendingIntent pIntent = PendingIntent.getActivity(context, 5, mainIntent, 0);
+
             if (status.getAdded() > 0) {
-                Intent mainIntent = new Intent(context, AlarmListActivity.class).setFlags(FLAG_ACTIVITY_REORDER_TO_FRONT);
-                PendingIntent pIntent = PendingIntent.getActivity(context, 0, mainIntent, 0);
 
                 String notificationMessage = context.getString(R.string.notification_message_alarms_modified_description, status.getTotal(), status.getAdded(), status.getDeleted());
-                Notifier.getBuilder(context).setContentTitle(context.getString(R.string.notification_message_alarms_modified))
-                        .setContentIntent(pIntent)
+
+                builder.setContentTitle(context.getString(R.string.notification_message_alarms_modified))
                         .setContentText(notificationMessage)
-                        .setAutoCancel(true)
                         .setStyle(
-                                new NotificationCompat.BigTextStyle()
+                                new NotificationCompat
+                                        .BigTextStyle()
                                         .bigText(notificationMessage)
                         );
 
-                Notifier.notify(context, Notifier.NOTIFY_GENERAL, NotificationCompat.PRIORITY_MAX);
             } else {
-                Notifier.getBuilder(context).setContentTitle(context.getString(R.string.notification_message_alarms_not_modified))
+                builder.setContentTitle(context.getString(R.string.notification_message_alarms_not_modified))
                         .setContentText(context.getString(R.string.notification_message_alarms_not_modified_description));
-
-                Notifier.notify(context, Notifier.NOTIFY_GENERAL, NotificationCompat.PRIORITY_MAX);
             }
+            builder.setAutoCancel(true)
+                    .setContentIntent(pIntent);
+            Notifier.notify(context, builder, Notifier.NOTIFY_GENERAL, NotificationCompat.PRIORITY_MAX);
         }
 
         StorageHelper.saveLastExecutionTime(context, Calendar.getInstance().getTime());

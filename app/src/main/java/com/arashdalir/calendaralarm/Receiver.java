@@ -18,6 +18,7 @@ public class Receiver extends BroadcastReceiver {
         {
             if (intent.getAction().contains(SnoozeActivity.ACTION_SNOOZE))
             {
+                Log.i(this.getClass().toString(), "Timer for an alarm reached!");
                 ServiceHelper.doAlarm(context.getApplicationContext(), intent);
             }
         }

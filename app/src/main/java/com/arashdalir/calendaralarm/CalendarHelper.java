@@ -17,7 +17,7 @@ import java.util.Calendar;
  * Created by ada on 18-Oct-17.
  */
 
-public class CalendarHelper {
+class CalendarHelper {
     // Calendars Projection
     private static final String[] CALENDAR_PROJECTION = new String[]{
             Calendars._ID,
@@ -61,7 +61,7 @@ public class CalendarHelper {
             return id;
         }
 
-        public String getDisplayName() {
+        String getDisplayName() {
             return displayName;
         }
 
@@ -70,11 +70,11 @@ public class CalendarHelper {
         }
     }
 
-    public static Cursor readCalendars(Context context) {
+    static Cursor readCalendars(Context context) {
         return readCalendars(context, 0);
     }
 
-    public static Cursor readCalendars(Context context, int calendarId) {
+    static Cursor readCalendars(Context context, int calendarId) {
         Uri.Builder builder = Calendars.CONTENT_URI.buildUpon();
         ContentResolver contentResolver = context.getContentResolver();
 
@@ -85,14 +85,9 @@ public class CalendarHelper {
         return contentResolver.query(builder.build(), CALENDAR_PROJECTION, null, null, null);
     }
 
-    public static Cursor readEvents(Context context) {
+    static Cursor readEvents(Context context, long beginms, long endms) {
         ContentResolver contentResolver = context.getContentResolver();
         Uri.Builder builder = Instances.CONTENT_URI.buildUpon();
-
-        Calendar now = Calendar.getInstance();
-        long beginms = now.getTimeInMillis();
-        now.add(Calendar.DATE, 7);
-        long endms = now.getTimeInMillis();
 
         ContentUris.appendId(builder, beginms);
         ContentUris.appendId(builder, endms);
@@ -106,7 +101,7 @@ public class CalendarHelper {
         );
     }
 
-    public static Cursor readReminders(Context context, int eventId) {
+    static Cursor readReminders(Context context, int eventId) {
         ContentResolver cr = context.getContentResolver();
         Uri.Builder builder = CalendarContract.Reminders.CONTENT_URI.buildUpon();
 
@@ -122,7 +117,7 @@ public class CalendarHelper {
         );
     }
 
-    public static CalendarInfo getCalendarInfo(Context context, int calendarId)
+    static CalendarInfo getCalendarInfo(Context context, int calendarId)
     {
         if (calendarId == -1)
         {

@@ -1,8 +1,13 @@
 package com.arashdalir.calendaralarm;
 
+import android.annotation.TargetApi;
 import android.content.Context;
+import android.media.AudioAttributes;
+import android.media.AudioManager;
 import android.media.MediaPlayer;
+import android.media.Ringtone;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Vibrator;
 import android.util.Log;
 
@@ -15,7 +20,9 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 
-public class Alarms {
+import static android.media.AudioManager.AUDIOFOCUS_GAIN_TRANSIENT;
+
+class Alarms {
     private static ArrayList<Alarm> alarms;
 
     private static final String ALARM_EVENT_TIME = "eventTime";
@@ -27,17 +34,19 @@ public class Alarms {
     private static final String ALARM_CALENDAR_ID = "calendarId";
     private static final String ALARM_VERSION = "app_version";
     private static final String ALARM_STATE = "state";
+    private static final String ALARM_EVENT_ID = "id";
 
-    private static final String ALARMS_STORAGE_VERSION = "v1";
 
-    public static class Alarm {
-        public static final int STATE_NEW = 0;
-        public static final int STATE_STORED = 1;
-        public static final int STATE_INACTIVE = 1 << 1;
-        public static final int STATE_REMINDER_TIME_PASSED = 1 << 2;
-        public static final int STATE_SNOOZED = 1 << 3;
-        public static final int STATE_DELETED = 1 << 4;
-        public static final int STATE_ALARMING = 1 << 8;
+    private static final String ALARMS_STORAGE_VERSION = "v1.1";
+
+    static class Alarm {
+        static final int STATE_NEW = 0;
+        static final int STATE_STORED = 1;
+        static final int STATE_INACTIVE = 1 << 1;
+        static final int STATE_REMINDER_TIME_PASSED = 1 << 2;
+        static final int STATE_SNOOZED = 1 << 3;
+        static final int STATE_DELETED = 1 << 4;
+        static final int STATE_ALARMING = 1 << 8;
 
         private String reminderId = null;
         private String ringtone = null;
@@ -49,13 +58,15 @@ public class Alarms {
         private String version = null;
         private int state = STATE_NEW;
         private boolean markDeleted = false;
+        private int eventId = 0;
 
         private Vibrator vibrator = null;
+        private Ringtone ringtonePlayer = null;
         private MediaPlayer player = null;
+        private AudioManager audioManager;
 
         Alarm(String id) {
             this.reminderId = id;
-            reset();
         }
 
         Alarm(JSONObject alm) {
@@ -68,55 +79,55 @@ public class Alarms {
             }
         }
 
-        public int getCalendarId() {
+        int getCalendarId() {
             return calendarId;
         }
 
-        public String getReminderId() {
+        String getReminderId() {
             return reminderId;
         }
 
-        public String getRingtone() {
+        String getRingtone() {
             return ringtone;
         }
 
-        public boolean isVibrate() {
+        boolean isVibrate() {
             return vibrate;
         }
 
-        public Calendar getReminderTime() {
+        Calendar getReminderTime() {
             return reminderTime;
         }
 
-        public Calendar getEventTime() {
+        Calendar getEventTime() {
             return eventTime;
         }
 
-        public String getTitle() {
+        String getTitle() {
             return title;
         }
 
-        public void setRingtone(String ringtone) {
+        void setRingtone(String ringtone) {
             this.ringtone = ringtone;
         }
 
-        public void setVibrate(boolean vibrate) {
+        void setVibrate(boolean vibrate) {
             this.vibrate = vibrate;
         }
 
-        public void setReminderTime(Calendar reminderTime) {
+        void setReminderTime(Calendar reminderTime) {
             this.reminderTime = reminderTime;
         }
 
-        public void setEventTime(Calendar eventTime) {
+        void setEventTime(Calendar eventTime) {
             this.eventTime = eventTime;
         }
 
-        public void setTitle(String title) {
+        void setTitle(String title) {
             this.title = title;
         }
 
-        public void setCalendarId(int calendarId) {
+        void setCalendarId(int calendarId) {
             this.calendarId = calendarId;
         }
 
@@ -127,6 +138,7 @@ public class Alarms {
                     ringtone = null;
             boolean vibrate = false;
             int calendarId = 0,
+                    eventId = 0,
                     state = STATE_STORED;
             String version = ALARMS_STORAGE_VERSION;
 
@@ -140,19 +152,20 @@ public class Alarms {
                 ringtone = alm.getString(ALARM_RINGTONE);
                 vibrate = alm.getBoolean(ALARM_VIBRATE);
                 version = alm.getString(ALARM_VERSION);
+                eventId = alm.getInt(ALARM_EVENT_ID);
                 state = alm.getInt(ALARM_STATE);
             } catch (Exception e) {
                 Log.e(this.getClass().toString(), e.getMessage());
             }
 
-            return set(calendarId, title, reminderTime, eventTime, ringtone, vibrate, state, version);
+            return set(calendarId, title, reminderTime, eventTime, ringtone, vibrate, state, eventId, version);
         }
 
-        Alarm set(int calendarId, String title, Calendar reminderTime, Calendar eventTime, String ringtone, boolean vibrate) {
-            return set(calendarId, title, reminderTime, eventTime, ringtone, vibrate, STATE_NEW, ALARMS_STORAGE_VERSION);
+        Alarm set(int calendarId, String title, Calendar reminderTime, Calendar eventTime, String ringtone, boolean vibrate, int eventId) {
+            return set(calendarId, title, reminderTime, eventTime, ringtone, vibrate, STATE_NEW, eventId, ALARMS_STORAGE_VERSION);
         }
 
-        Alarm set(int calendarId, String title, Calendar reminderTime, Calendar eventTime, String ringtone, boolean vibrate, int state, String version) {
+        Alarm set(int calendarId, String title, Calendar reminderTime, Calendar eventTime, String ringtone, boolean vibrate, int state, int eventId, String version) {
             setReminderTime(reminderTime);
             setEventTime(eventTime);
             setTitle(title);
@@ -161,6 +174,7 @@ public class Alarms {
             setCalendarId(calendarId);
             setVersion(version);
             setState(state);
+            setEventId(eventId);
 
             return this;
         }
@@ -177,18 +191,18 @@ public class Alarms {
         }
 
         Alarm reset() {
-            set(0, null, null, null, null, false);
+            set(0, null, null, null, null, false, 0);
 
             return this;
         }
 
-        public Alarm set(Alarm alarm) {
-            this.set(alarm.getCalendarId(), alarm.getTitle(), alarm.getReminderTime(), alarm.getEventTime(), alarm.getRingtone(), alarm.isVibrate());
+        Alarm set(Alarm alarm) {
+            this.set(alarm.getCalendarId(), alarm.getTitle(), alarm.getReminderTime(), alarm.getEventTime(), alarm.getRingtone(), alarm.isVibrate(), alarm.getEventId());
 
             return this;
         }
 
-        public boolean convertVersion() {
+        boolean convertVersion() {
             boolean converted = false;
             if (!this.getVersion().equals(ALARMS_STORAGE_VERSION)) {
 
@@ -198,19 +212,19 @@ public class Alarms {
             return converted;
         }
 
-        public String getVersion() {
+        String getVersion() {
             return version;
         }
 
-        public void setVersion(String version) {
+        void setVersion(String version) {
             this.version = version;
         }
 
-        public int getState() {
+        int getState() {
             return state;
         }
 
-        public void setState(int state) {
+        void setState(int state) {
             if (state == Alarm.STATE_NEW) {
                 this.state = Alarm.STATE_NEW;
             } else {
@@ -218,7 +232,7 @@ public class Alarms {
             }
         }
 
-        public void resetState(int state) {
+        void resetState(int state) {
             if (state == Alarm.STATE_NEW) {
                 this.state = Alarm.STATE_STORED;
             } else if (hasState(state)) {
@@ -226,7 +240,7 @@ public class Alarms {
             }
         }
 
-        public boolean hasState(int state) {
+        boolean hasState(int state) {
             boolean status = false;
             if (state == Alarm.STATE_NEW && this.getState() == Alarm.STATE_NEW) {
                 status = true;
@@ -237,11 +251,11 @@ public class Alarms {
             return status;
         }
 
-        public boolean isSnoozing() {
+        boolean isSnoozing() {
             return hasState(Alarm.STATE_SNOOZED);
         }
 
-        public JSONObject toJSON() {
+        JSONObject toJSON() {
             JSONObject alm = new JSONObject();
             try {
                 alm
@@ -252,6 +266,7 @@ public class Alarms {
                         .put(ALARM_RINGTONE, this.ringtone)
                         .put(ALARM_VIBRATE, this.vibrate)
                         .put(ALARM_CALENDAR_ID, this.calendarId)
+                        .put(ALARM_EVENT_ID, this.eventId)
                         .put(ALARM_VERSION, this.version)
                         .put(ALARM_STATE, this.state);
             } catch (Exception e) {
@@ -261,19 +276,19 @@ public class Alarms {
             return alm;
         }
 
-        public boolean isMarkedForDeletion() {
+        boolean isMarkedForDeletion() {
             return markDeleted;
         }
 
-        public void markForDeletion() {
+        void markForDeletion() {
             markForDeletion(true);
         }
 
-        public void markForDeletion(boolean markDeleted) {
+        void markForDeletion(boolean markDeleted) {
             this.markDeleted = markDeleted;
         }
 
-        public boolean checkTimes() {
+        boolean checkTimes() {
             boolean createTimer = false;
             if (!hasState(Alarms.Alarm.STATE_INACTIVE)) {
                 if (eventTimePassed()) {
@@ -292,72 +307,112 @@ public class Alarms {
             return createTimer;
         }
 
-        public boolean isDeleted() {
+        boolean isDeleted() {
             return isMarkedForDeletion() || hasState(Alarm.STATE_DELETED);
         }
 
-        public void vibrate(Context context) {
-            if (isVibrate()) {
+        @TargetApi(Build.VERSION_CODES.HONEYCOMB)
+        void vibrate(Context context) {
+            if (vibrator == null) {
                 vibrator = (Vibrator) context.getSystemService(Context.VIBRATOR_SERVICE);
+            }
 
+            if (isVibrate()) {
                 if (vibrator.hasVibrator()) {
                     long[] pattern = new long[]{0, 500, 0, 0, 500};
-                    vibrator.vibrate(pattern, 0);
+                    vibrator.vibrate(pattern, 0,
+                            new AudioAttributes.Builder()
+                                    .setUsage(AudioAttributes.USAGE_ALARM)
+                                    .setContentType(AudioAttributes.CONTENT_TYPE_SONIFICATION)
+                                    .build()
+                    );
                 }
             }
         }
 
-        public void cancelVibrate() {
+        void cancelVibrate() {
 
             if (vibrator != null) {
                 vibrator.cancel();
             }
         }
 
-        public void playRingtone(Context context) {
-            String ringtone = StorageHelper.getRingtone(context, true);
-            Uri ringtoneUri = Uri.parse(ringtone);
+        void playRingtone(Context context) {
+            String ringtoneName = StorageHelper.getRingtone(context, true);
+            Uri ringtoneUri = Uri.parse(ringtoneName);
 
-            if (!Uri.EMPTY.equals(ringtoneUri)) {
-                player = MediaPlayer.create(context, ringtoneUri);
-                player.setLooping(true);
-                player.start();
+            try {
+                if (!Uri.EMPTY.equals(ringtoneUri)) {
+                    if (audioManager == null) {
+                        audioManager = (AudioManager) context.getSystemService(Context.AUDIO_SERVICE);
+                    }
+
+                    player = MediaPlayer.create(context, ringtoneUri);
+                    player.stop();
+
+                    int sMax = audioManager.getStreamMaxVolume(AudioManager.STREAM_ALARM);
+                    int sVolume = audioManager.getStreamVolume(AudioManager.STREAM_ALARM);
+                    //audioManager.setStreamVolume(AudioManager.STREAM_ALARM, sVolume, sVolume);
+
+                    player.setLooping(true);
+                    player.setAudioAttributes(
+                            new AudioAttributes.Builder()
+                                    .setLegacyStreamType(AudioManager.STREAM_ALARM)
+                                    //.setUsage(AudioAttributes.USAGE_ALARM)
+                                    .setUsage(AudioAttributes.USAGE_ALARM)
+                                    .setFlags(AudioAttributes.CONTENT_TYPE_SONIFICATION)
+                                    .build()
+                    );
+
+                    player.prepare();
+                    audioManager.requestAudioFocus(null, AudioManager.STREAM_ALARM, AUDIOFOCUS_GAIN_TRANSIENT);
+                    audioManager.setStreamVolume(AudioManager.STREAM_ALARM, sMax, 0);
+                    player.start();
+                }
+            } catch (Exception e) {
+
             }
         }
 
-        public void stopRingtone() {
-            if (this.player != null) {
-                if (this.player.isPlaying()) {
-                    this.player.stop();
+        void stopRingtone() {
+            if (player != null) {
+                if (player.isPlaying()) {
+                    player.stop();
+                    player.release();
+                    player = null;
                 }
             }
+
+            if (audioManager != null) {
+                audioManager.abandonAudioFocus(null);
+            }
         }
 
-        public int getCalendarColor(Context context) {
+        int getCalendarColor(Context context) {
             CalendarHelper.CalendarInfo calendar = CalendarHelper.getCalendarInfo(context, getCalendarId());
 
             return calendar.getColor();
         }
 
-        public String getCalendarName(Context context) {
+        String getCalendarName(Context context) {
             CalendarHelper.CalendarInfo calendar = CalendarHelper.getCalendarInfo(context, getCalendarId());
 
             return calendar.getDisplayName();
         }
 
-        public void stopAlarm() {
+        void stopAlarm() {
             resetState(STATE_ALARMING);
             cancelVibrate();
             stopRingtone();
         }
 
-        public void startAlarm(Context context) {
+        void startAlarm(Context context) {
             setState(STATE_ALARMING);
             vibrate(context);
             playRingtone(context);
         }
 
-        public static String getIdFromJSON(JSONObject obj) {
+        static String getIdFromJSON(JSONObject obj) {
             String id = null;
             try {
                 id = obj.getString(ALARM_ID);
@@ -367,38 +422,46 @@ public class Alarms {
 
             return id;
         }
+
+        public int getEventId() {
+            return eventId;
+        }
+
+        public void setEventId(int eventId){
+            this.eventId = eventId;
+        }
     }
 
-    public class AlarmsStati {
+    class AlarmsStati {
         private int added = 0;
         private int expired = 0;
         private int deleted = 0;
 
-        public int getAdded() {
+        int getAdded() {
             return added;
         }
 
-        public void setAdded() {
+        void setAdded() {
             this.added++;
         }
 
-        public int getExpired() {
+        int getExpired() {
             return expired;
         }
 
-        public void setExpired() {
+        void setExpired() {
             this.expired++;
         }
 
-        public int getDeleted() {
+        int getDeleted() {
             return deleted;
         }
 
-        public void setDeleted() {
+        void setDeleted() {
             this.deleted++;
         }
 
-        public int getTotal() {
+        int getTotal() {
             return getAdded() + getDeleted();
         }
     }
@@ -407,7 +470,7 @@ public class Alarms {
         alarms = new ArrayList<>();
     }
 
-    public AlarmsStati filterCalendars(List<Integer> calendars) {
+    AlarmsStati filterCalendars(List<Integer> calendars) {
         AlarmsStati status = new AlarmsStati();
 
         boolean expired = false, passed = false;
@@ -436,7 +499,7 @@ public class Alarms {
         return status;
     }
 
-    public boolean checkTimes() {
+    boolean checkTimes() {
         boolean status = false;
         if (!alarms.isEmpty()) {
             for (Alarm alarm : alarms) {
@@ -450,11 +513,11 @@ public class Alarms {
         return status;
     }
 
-    public Alarm find(String reminderId) {
+    Alarm find(String reminderId) {
         return find(reminderId, true);
     }
 
-    public Alarm find(String reminderId, boolean createIfNotExists) {
+    Alarm find(String reminderId, boolean createIfNotExists) {
 
         Alarm alarm = null;
         int position = getPosition(reminderId);
@@ -462,8 +525,7 @@ public class Alarms {
         if (position != -1) {
             alarm = getByPosition(position);
         } else {
-            if (createIfNotExists)
-            {
+            if (createIfNotExists) {
                 alarm = new Alarm(reminderId);
                 alarms.add(alarm);
             }
@@ -471,19 +533,18 @@ public class Alarms {
         return alarm;
     }
 
-    public Alarm getByPosition(int position) {
+    Alarm getByPosition(int position) {
         return getByPosition(position, false);
     }
 
-    public Alarm getByPosition(int position, boolean skipDeleted) {
+    Alarm getByPosition(int position, boolean skipDeleted) {
         Alarm alarm = null;
         if (!alarms.isEmpty()) {
             for (int i = 0; i < alarms.size(); i++) {
-                if (!skipDeleted || alarms.get(i).isDeleted()) {
+                if (skipDeleted && alarms.get(i).isDeleted()) {
                     continue;
                 }
-                if (position-- == 0)
-                {
+                if (position-- == 0) {
                     alarm = alarms.get(i);
                     break;
                 }
@@ -495,7 +556,7 @@ public class Alarms {
 
     private int getPosition(String reminderId) {
         for (int i = 0; i < alarms.size(); i++) {
-            Alarm alarm  = alarms.get(i);
+            Alarm alarm = alarms.get(i);
             if (!alarm.isDeleted()) {
                 if (alarm.reminderId.equals(reminderId)) {
                     return i;
@@ -506,7 +567,7 @@ public class Alarms {
         return -1;
     }
 
-    public boolean alarmExists(String reminderId) {
+    boolean alarmExists(String reminderId) {
         if (getPosition(reminderId) != -1) {
             return true;
         } else {
@@ -587,7 +648,7 @@ public class Alarms {
         alarms.clear();
     }
 
-    public int count() {
+    int count() {
         int count = 0;
 
         for (Alarm alarm : alarms) {

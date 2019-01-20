@@ -17,9 +17,7 @@
     <string name="activity_calendar_selection_description">Select the calendars for whose events you want to have alarms created:</string>
 
     <string name="title_activity_settings">Settings</string>
-    <string name="title_activity_permission_check">Permission Check</string>
     <string name="title_activity_calendar_selection">Calendar List</string>
-    <string name="title_activity_alarm_list">Alarms List</string>
 
     <string name="notification_message_permission_missing_title">Permissions Missing</string>
     <string name="notification_message_permissions_missing_description">Please go to CalendarAlarm\'s settings to resolve permissions issues.</string>
@@ -43,13 +41,11 @@
     <string name="activity_permission_granted">Granted Permissions</string>
     <string name="activity_permission_rejected">Missing Permissions</string>
 
-    <string name="title_service_alarm">%1$s - %2$s - %3$d Minute(s) Before</string>
     <string name="notification_toast_settings_changes_saved">Changes Saved. Updating Alarms&#8230;</string>
     <string name="notification_toast_calendar_selection_saved">Selected calendars memorized. Updating Alarms&#8230;</string>
     <string name="notification_snackbar_alarm_removed">Alarm \"%1$s\" removed!</string>
 
     <string name="activity_alarm_list_delete_alarm">Delete</string>
-    <string name="activity_alarm_list_alarm_active">Active</string>
     <string name="activity_alarm_list_alarm_time_format">%1$s at %2$s</string>
     <string name="activity_alarm_list_alarm_reminder_time">Reminder at: %1$s</string>
     <string name="activity_alarm_list_alarm_event_time">Event at: %1$s</string>
@@ -61,15 +57,11 @@
     <string name="service_action_string">%1$s-%2$s</string>
     <string name="activity_snooze_cancel">Cancel Alarm</string>
     <string name="activity_snooze_snooze">Snooze</string>
-    <string name="menu_reload">Reload Events</string>
     <string name="menu_list">View List</string>
-    <string name="title_activity_test">TestActivity</string>
     <string name="menu_reset">Reset Events</string>
     <string name="menu_reset_title">Reset Stored Events</string>
     <string name="menu_reset_title_description">Are you sure you want to reset all the events fetched by the app? This action is irreversible!</string>
     <string name="menu_reset_initiated">Resetting Events&#8230;</string>
-    <string name="notification_message_events_reset">Cleared All Events!</string>
-    <string name="notification_message_events_reset_description">Events cleared from the system.</string>
     <string name="activity_alarm_list_remove_reminder">Remove Reminder?</string>
     <string name="activity_alarm_list_remove_reminder_description">Are you sure you want to remove this reminder?</string>
     <string name="create_fake_reminder">Create Fake Reminder</string>
@@ -77,4 +69,5 @@
     <string name="activity_alarm_list_alarm_alarming">Being alarmed</string>
     <string name="menu_reset_finished">Event list is reset.</string>
     <string name="notification_toast_reminders_created">Reminders added for alarms.</string>
+    <string name="activity_alarm_list_view_in_calendar">View In Calendar</string>
 </resources>

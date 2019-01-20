@@ -11,10 +11,10 @@ public class CalendarChangeReceiver extends BroadcastReceiver {
     public void onReceive(Context context, Intent intent) {
 
         AlarmManagerService.enqueueWork(context);
-        Notifier.getBuilder(context)
+        NotificationCompat.Builder builder = Notifier.getBuilder(context)
                 .setContentTitle(context.getString(R.string.notification_message_looking_for_events))
                 .setContentText(context.getString(R.string.notification_message_looking_for_events_description, context.getString(R.string.app_name)));
 
-        Notifier.notify(context, Notifier.NOTIFY_GENERAL, NotificationCompat.PRIORITY_DEFAULT);
+        Notifier.notify(context, builder, Notifier.NOTIFY_GENERAL, NotificationCompat.PRIORITY_DEFAULT);
     }
 }

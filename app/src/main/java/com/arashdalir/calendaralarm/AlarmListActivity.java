@@ -38,11 +38,13 @@ public class AlarmListActivity extends AppCompatActivity implements AlarmsTouchH
 
         refresher = findViewById(R.id.rv_alarm_list_refresher);
 
+        refresher.setColorSchemeResources(R.color.refresher1, R.color.refresher2, R.color.refresher3, R.color.refresher4);
+
         refresher.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
             @Override
             public void onRefresh() {
                 Intent intent = new Intent(getApplicationContext(), AlarmManagerService.class);
-                intent.setAction(ServiceHelper.ACTION_SET_WAKEUP_TIMERS);
+                intent.setAction(ServiceHelper.ACTION_CHECK_REMINDER_ALARMS);
                 AlarmManagerService.enqueueWork(getApplicationContext(), intent);
                 drawView(adapter);
                 refresher.setRefreshing(false);
@@ -104,6 +106,7 @@ public class AlarmListActivity extends AppCompatActivity implements AlarmsTouchH
             return;
         }
 
+        /*
         if (actionState == ItemTouchHelper.ACTION_STATE_SWIPE) {
             View delete = viewHolder.itemView.findViewById(R.id.delete_bg);
             View edit = viewHolder.itemView.findViewById(R.id.edit_bg);
@@ -116,8 +119,8 @@ public class AlarmListActivity extends AppCompatActivity implements AlarmsTouchH
                 delete.setVisibility(View.INVISIBLE);
                 edit.setVisibility(View.VISIBLE);
             }
-
         }
+        */
     }
 
     @Override
@@ -150,7 +153,7 @@ public class AlarmListActivity extends AppCompatActivity implements AlarmsTouchH
                                     });
 
                                     // showing snack bar with Undo option
-                                    Notifier.snackBarAction action = new Notifier.snackBarAction();
+                                    Notifier.SnackBarAction action = new Notifier.SnackBarAction();
                                     action.message = "";
                                     action.onClickListener = new View.OnClickListener() {
                                         @Override
@@ -167,7 +170,7 @@ public class AlarmListActivity extends AppCompatActivity implements AlarmsTouchH
                                     };
                                     action.actionTextColor = Color.YELLOW;
 
-                                    Notifier.snackBarAction[] actions = new Notifier.snackBarAction[1];
+                                    Notifier.SnackBarAction[] actions = new Notifier.SnackBarAction[1];
                                     actions[0] = action;
                                     Notifier.showSnackBar(
                                             rv,

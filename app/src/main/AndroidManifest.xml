@@ -6,6 +6,7 @@
     <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
     <uses-permission android:name="android.permission.WAKE_LOCK" />
     <uses-permission android:name="android.permission.VIBRATE" />
+    <uses-permission android:name="android.permission.ACCESS_NOTIFICATION_POLICY"/>
 
     <application
         android:name=".CalendarApplication"
@@ -27,15 +28,18 @@
         </activity>
         <activity
             android:name=".SettingsActivity"
+            android:excludeFromRecents="true"
             android:parentActivityName=".AlarmListActivity"
             android:launchMode="singleInstance"
             android:label="@string/title_activity_settings" />
         <activity
             android:name=".PermissionCheckActivity"
+            android:excludeFromRecents="true"
             android:parentActivityName=".SettingsActivity"
             android:launchMode="singleInstance"/>
         <activity
             android:name=".CalendarSelectionActivity"
+            android:excludeFromRecents="true"
             android:parentActivityName=".SettingsActivity"
             android:launchMode="singleInstance"/>
         <activity

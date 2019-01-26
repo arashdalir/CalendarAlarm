@@ -36,10 +36,13 @@ class Alarms {
     private static final String ALARM_STATE = "state";
     private static final String ALARM_EVENT_ID = "id";
 
+    static final int FAKE_CALENDAR_ID = -1;
+
 
     private static final String ALARMS_STORAGE_VERSION = "v1.1";
 
     static class Alarm {
+        static final int STATE_UNCHANGED = -1;
         static final int STATE_NEW = 0;
         static final int STATE_STORED = 1;
         static final int STATE_INACTIVE = 1 << 1;
@@ -48,7 +51,7 @@ class Alarms {
         static final int STATE_DELETED = 1 << 4;
         static final int STATE_ALARMING = 1 << 8;
 
-        private String reminderId = null;
+        private String reminderId;
         private String ringtone = null;
         private boolean vibrate = false;
         private Calendar reminderTime = null;
@@ -61,22 +64,11 @@ class Alarms {
         private int eventId = 0;
 
         private Vibrator vibrator = null;
-        private Ringtone ringtonePlayer = null;
         private MediaPlayer player = null;
         private AudioManager audioManager;
 
         Alarm(String id) {
             this.reminderId = id;
-        }
-
-        Alarm(JSONObject alm) {
-            try {
-                this.reminderId = alm.getString(ALARM_ID);
-                ;
-                this.set(alm);
-            } catch (Exception e) {
-
-            }
         }
 
         int getCalendarId() {
@@ -161,8 +153,8 @@ class Alarms {
             return set(calendarId, title, reminderTime, eventTime, ringtone, vibrate, state, eventId, version);
         }
 
-        Alarm set(int calendarId, String title, Calendar reminderTime, Calendar eventTime, String ringtone, boolean vibrate, int eventId) {
-            return set(calendarId, title, reminderTime, eventTime, ringtone, vibrate, STATE_NEW, eventId, ALARMS_STORAGE_VERSION);
+        void set(int calendarId, String title, Calendar reminderTime, Calendar eventTime, String ringtone, boolean vibrate, int eventId) {
+            set(calendarId, title, reminderTime, eventTime, ringtone, vibrate, STATE_UNCHANGED, eventId, ALARMS_STORAGE_VERSION);
         }
 
         Alarm set(int calendarId, String title, Calendar reminderTime, Calendar eventTime, String ringtone, boolean vibrate, int state, int eventId, String version) {
@@ -181,35 +173,16 @@ class Alarms {
 
         boolean eventTimePassed() {
             Calendar now = Calendar.getInstance();
-            return (eventTime.getTimeInMillis() < now.getTimeInMillis() && !hasState(Alarm.STATE_SNOOZED));
+            return (eventTime.before(now) && (!hasState(Alarm.STATE_SNOOZED) || reminderTimePassed()));
         }
 
         boolean reminderTimePassed() {
-
             Calendar now = Calendar.getInstance();
-            return reminderTime.getTimeInMillis() < now.getTimeInMillis();
+            return reminderTime.before(now);
         }
 
-        Alarm reset() {
-            set(0, null, null, null, null, false, 0);
-
-            return this;
-        }
-
-        Alarm set(Alarm alarm) {
+        void set(Alarm alarm) {
             this.set(alarm.getCalendarId(), alarm.getTitle(), alarm.getReminderTime(), alarm.getEventTime(), alarm.getRingtone(), alarm.isVibrate(), alarm.getEventId());
-
-            return this;
-        }
-
-        boolean convertVersion() {
-            boolean converted = false;
-            if (!this.getVersion().equals(ALARMS_STORAGE_VERSION)) {
-
-                converted = true;
-            }
-
-            return converted;
         }
 
         String getVersion() {
@@ -225,10 +198,12 @@ class Alarms {
         }
 
         void setState(int state) {
-            if (state == Alarm.STATE_NEW) {
-                this.state = Alarm.STATE_NEW;
-            } else {
-                this.state |= state;
+            if (state != STATE_UNCHANGED) {
+                if (state == Alarm.STATE_NEW) {
+                    this.state = Alarm.STATE_NEW;
+                } else {
+                    this.state |= state;
+                }
             }
         }
 
@@ -251,10 +226,6 @@ class Alarms {
             return status;
         }
 
-        boolean isSnoozing() {
-            return hasState(Alarm.STATE_SNOOZED);
-        }
-
         JSONObject toJSON() {
             JSONObject alm = new JSONObject();
             try {
@@ -270,7 +241,7 @@ class Alarms {
                         .put(ALARM_VERSION, this.version)
                         .put(ALARM_STATE, this.state);
             } catch (Exception e) {
-
+                Log.d(e.getClass().toString(), "Converting alarm toJSON failed");
             }
 
             return alm;
@@ -281,11 +252,7 @@ class Alarms {
         }
 
         void markForDeletion() {
-            markForDeletion(true);
-        }
-
-        void markForDeletion(boolean markDeleted) {
-            this.markDeleted = markDeleted;
+            this.markDeleted = true;
         }
 
         boolean checkTimes() {
@@ -295,12 +262,8 @@ class Alarms {
                     markForDeletion();
                 } else if (reminderTimePassed()) {
                     setState(Alarms.Alarm.STATE_REMINDER_TIME_PASSED);
-                } else if (!isSnoozing()) {
-                    if (!eventTimePassed()) {
-                        createTimer = true;
-                    }
                 } else {
-                    markForDeletion();
+                    createTimer = true;
                 }
             }
 
@@ -423,11 +386,11 @@ class Alarms {
             return id;
         }
 
-        public int getEventId() {
+        int getEventId() {
             return eventId;
         }
 
-        public void setEventId(int eventId){
+        void setEventId(int eventId) {
             this.eventId = eventId;
         }
     }
@@ -484,7 +447,9 @@ class Alarms {
             expired = alarm.reminderTimePassed();
             passed = alarm.eventTimePassed();
 
-            if (!calendars.contains(alarm.getCalendarId()) || passed) {
+            int calendarId = alarm.getCalendarId();
+
+            if (!(calendarId == Alarms.FAKE_CALENDAR_ID || calendars.contains(calendarId)) || passed) {
                 alarm.markForDeletion();
                 status.setDeleted();
             } else if (alarm.hasState(Alarm.STATE_NEW)) {
@@ -533,7 +498,7 @@ class Alarms {
         return alarm;
     }
 
-    Alarm getByPosition(int position) {
+    private Alarm getByPosition(int position) {
         return getByPosition(position, false);
     }
 
@@ -567,17 +532,9 @@ class Alarms {
         return -1;
     }
 
-    boolean alarmExists(String reminderId) {
-        if (getPosition(reminderId) != -1) {
-            return true;
-        } else {
-            return false;
-        }
-    }
-
     boolean delete(int position, Alarm deleted) {
         Alarm alarm = this.getByPosition(position);
-        if (alarm.reminderId.equals(deleted.reminderId)) {
+        if (alarm.reminderId.equals(deleted.reminderId) && !alarm.hasState(Alarm.STATE_ALARMING)) {
             alarm.markForDeletion();
             return true;
         } else {
@@ -585,11 +542,8 @@ class Alarms {
         }
     }
 
-    boolean set(JSONArray alarms) {
+    void set(JSONArray alarms) {
         try {
-
-            boolean converted = false;
-
             if (alarms != null) {
                 for (int i = 0; i < alarms.length(); i++) {
                     JSONObject alm = (JSONObject) alarms.get(i);
@@ -600,15 +554,11 @@ class Alarms {
                     if (alarm.hasState(Alarm.STATE_NEW)) {
                         alarm.setState(Alarm.STATE_STORED);
                     }
-                    converted = alarm.convertVersion();
                 }
             }
 
             sort();
-
-            return converted;
         } catch (Exception e) {
-            return false;
         }
     }
 

@@ -48,10 +48,6 @@ public class AlarmListAdapter
         alarms.set(alms);
     }
 
-    boolean alarmExists(String reminderId) {
-        return alarms.alarmExists(reminderId);
-    }
-
     Alarms.Alarm getItem(int position, boolean skipDeleted) {
         return alarms.getByPosition(position, skipDeleted);
     }
@@ -165,13 +161,14 @@ public class AlarmListAdapter
         }
     }
 
-    void removeItem(int position) {
+    boolean removeItem(int position) {
         Alarms.Alarm alarm = this.getItem(position, false);
-
+        boolean removed = false;
         if (alarm != null) {
-            if (alarms.delete(position, alarm)) {
-            }
+            removed = alarms.delete(position, alarm);
         }
+
+        return removed;
     }
 
     void restoreItem(Alarms.Alarm alarm) {

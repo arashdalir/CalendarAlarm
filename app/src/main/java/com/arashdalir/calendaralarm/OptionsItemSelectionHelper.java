@@ -15,12 +15,8 @@ import java.util.Calendar;
 
 import static android.content.Intent.FLAG_ACTIVITY_REORDER_TO_FRONT;
 
-public class OptionsItemSelectionHelper {
-    public static boolean handleOptionSelection(Fragment fragment, MenuItem item) {
-        return handleOptionSelection(fragment.getActivity(), item);
-    }
-
-    public static boolean handleOptionSelection(Context context, MenuItem item) {
+class OptionsItemSelectionHelper {
+    static boolean handleOptionSelection(Context context, MenuItem item) {
         boolean status = true;
         int id = item.getItemId();
         switch (id) {
@@ -55,12 +51,12 @@ public class OptionsItemSelectionHelper {
 
         return status;
     }
-    public static boolean createMenuItems(Activity activity, Menu menu) {
+    static boolean createMenuItems(Activity activity, Menu menu) {
         MenuInflater inflater = activity.getMenuInflater();
         return createMenuItems(inflater, menu);
     }
 
-    public static boolean createMenuItems(MenuInflater inflater, Menu menu){
+    private static boolean createMenuItems(MenuInflater inflater, Menu menu){
         inflater.inflate(R.menu.actions, menu);
         return true;
 
@@ -79,7 +75,7 @@ public class OptionsItemSelectionHelper {
         Calendar event = (Calendar) reminder.clone();
         event.add(Calendar.MINUTE, 3);
 
-        alarm.set(-1, "Fake Alarm", reminder, event, StorageHelper.getRingtone(context), StorageHelper.getVibrate(context), 0);
+        alarm.set(Alarms.FAKE_CALENDAR_ID, "Fake Alarm", reminder, event, StorageHelper.getRingtone(context), StorageHelper.getVibrate(context), 0);
         alarms.sort();
 
         Activity a = (Activity)context;

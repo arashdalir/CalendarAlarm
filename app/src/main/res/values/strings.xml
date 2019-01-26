@@ -44,6 +44,7 @@
     <string name="notification_toast_settings_changes_saved">Changes Saved. Updating Alarms&#8230;</string>
     <string name="notification_toast_calendar_selection_saved">Selected calendars memorized. Updating Alarms&#8230;</string>
     <string name="notification_snackbar_alarm_removed">Alarm \"%1$s\" removed!</string>
+    <string name="notification_snackbar_alarm_in_use">You cannot modify alarm \"%1$s\" while it\'s being used. Please try again later.</string>
 
     <string name="activity_alarm_list_delete_alarm">Delete</string>
     <string name="activity_alarm_list_alarm_time_format">%1$s at %2$s</string>

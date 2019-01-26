@@ -57,8 +57,9 @@
            <intent-filter>
                 <action android:name="com.arashdalir.calendaralarm.action.ALARM_SNOOZE" />
             </intent-filter>
-        </receiver>
-        <receiver android:name=".CalendarChangeReceiver">
+           <intent-filter>
+                <action android:name="com.arashdalir.calendaralarm.action.DO_JOB" />
+            </intent-filter>
             <intent-filter>
                 <action android:name="android.intent.action.PROVIDER_CHANGED" />
                 <data android:scheme="content" />

@@ -145,39 +145,49 @@ public class AlarmListActivity extends AppCompatActivity implements AlarmsTouchH
                             new DialogInterface.OnClickListener() {
                                 public void onClick(DialogInterface dialog, int whichButton) {
                                     // remove the item from recycler view
-                                    adapter.removeItem(deletedIndex);
-                                    runOnUiThread(new Runnable() {
-                                        public void run() {
-                                            adapter.notifyDataSetChanged();
-                                        }
-                                    });
+                                    if (adapter.removeItem(deletedIndex)) {
+                                        runOnUiThread(new Runnable() {
+                                            public void run() {
+                                                adapter.notifyDataSetChanged();
+                                            }
+                                        });
 
-                                    // showing snack bar with Undo option
-                                    Notifier.SnackBarAction action = new Notifier.SnackBarAction();
-                                    action.message = "";
-                                    action.onClickListener = new View.OnClickListener() {
-                                        @Override
-                                        public void onClick(View view) {
+                                        // showing snack bar with Undo option
+                                        Notifier.SnackBarAction action = new Notifier.SnackBarAction();
+                                        action.message = "";
+                                        action.onClickListener = new View.OnClickListener() {
+                                            @Override
+                                            public void onClick(View view) {
 
-                                            // undo is selected, restore the deleted item
-                                            adapter.restoreItem(deletedItem);
-                                            runOnUiThread(new Runnable() {
-                                                public void run() {
-                                                    adapter.notifyDataSetChanged();
-                                                }
-                                            });
-                                        }
-                                    };
-                                    action.actionTextColor = Color.YELLOW;
+                                                // undo is selected, restore the deleted item
+                                                adapter.restoreItem(deletedItem);
+                                                runOnUiThread(new Runnable() {
+                                                    public void run() {
+                                                        adapter.notifyDataSetChanged();
+                                                    }
+                                                });
+                                            }
+                                        };
+                                        action.actionTextColor = Color.YELLOW;
 
-                                    Notifier.SnackBarAction[] actions = new Notifier.SnackBarAction[1];
-                                    actions[0] = action;
-                                    Notifier.showSnackBar(
-                                            rv,
-                                            getString(R.string.notification_snackbar_alarm_removed, name),
-                                            Snackbar.LENGTH_LONG,
-                                            actions
-                                    );
+                                        Notifier.SnackBarAction[] actions = new Notifier.SnackBarAction[1];
+                                        actions[0] = action;
+                                        Notifier.showSnackBar(
+                                                rv,
+                                                getString(R.string.notification_snackbar_alarm_removed, name),
+                                                Snackbar.LENGTH_LONG,
+                                                actions
+                                        );
+                                    }
+                                    else
+                                    {
+
+                                        Notifier.showSnackBar(
+                                                rv,
+                                                getString(R.string.notification_snackbar_alarm_in_use, name),
+                                                Snackbar.LENGTH_LONG
+                                        );
+                                    }
                                 }
                             })
                     .setNegativeButton(android.R.string.no, new DialogInterface.OnClickListener() {

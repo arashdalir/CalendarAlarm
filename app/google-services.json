@@ -1,0 +1,42 @@
+{
+  "project_info": {
+    "project_number": "188720519103",
+    "firebase_url": "https://calendaralarm-69c97.firebaseio.com",
+    "project_id": "calendaralarm-69c97",
+    "storage_bucket": "calendaralarm-69c97.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:188720519103:android:8412398f1b9efdb2",
+        "android_client_info": {
+          "package_name": "com.arashdalir.calendaralarm"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "188720519103-iq06j8sfmb0r4o51btsaqco11pceqhjl.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAr1hztRtdjapRy-sLGZJdoCr72aRpU1nw"
+        }
+      ],
+      "services": {
+        "analytics_service": {
+          "status": 1
+        },
+        "appinvite_service": {
+          "status": 1,
+          "other_platform_oauth_client": []
+        },
+        "ads_service": {
+          "status": 2
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

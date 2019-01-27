@@ -230,7 +230,7 @@ public class AlarmListAdapter
         return this.getAlarms().find(reminderId, createIfNotExists);
     }
 
-    void reset(){
-        alarms.clear();
+    void reset(boolean clearFakes){
+        alarms.clear(clearFakes);
     }
 }

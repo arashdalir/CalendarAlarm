@@ -103,7 +103,7 @@ public class AlarmListAdapter
 
         View lastItem = (View) alarmDetails;
 
-        if (alarm.getEventId() != 0)
+        if (alarm.getCalendarId() != Alarms.FAKE_CALENDAR_ID)
         {
             Button viewInCalendar = new Button(context);
             viewInCalendar.setId(View.generateViewId());

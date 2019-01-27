@@ -326,16 +326,17 @@ class ServiceHelper {
 
     private Alarms.AlarmsStati readNotifications() {
         Calendar now = Calendar.getInstance();
+
+        int rawOffset = now.getTimeZone().getRawOffset();
+
         now.set(Calendar.MINUTE, 0);
         now.set(Calendar.HOUR_OF_DAY, 0);
         now.set(Calendar.SECOND, 0);
         now.set(Calendar.MILLISECOND, 0);
-        now.add(Calendar.MILLISECOND, -1 * now.getTimeZone().getRawOffset());
+        now.add(Calendar.MILLISECOND, -1 * rawOffset);
         long beginms = now.getTimeInMillis();
         now.add(Calendar.DATE, 8);
         long endms = now.getTimeInMillis();
-
-        int rawOffset = now.getTimeZone().getRawOffset();
 
         Cursor cursor = CalendarHelper.readEvents(context, beginms, endms);
         AlarmListAdapter adapter = ((CalendarApplication) context.getApplicationContext()).getAdapter(context);

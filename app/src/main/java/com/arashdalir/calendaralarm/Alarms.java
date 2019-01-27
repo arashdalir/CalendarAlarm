@@ -35,6 +35,7 @@ class Alarms {
     private static final String ALARM_VERSION = "app_version";
     private static final String ALARM_STATE = "state";
     private static final String ALARM_EVENT_ID = "id";
+    private static final String ALARM_ALL_DAY = "allDay";
 
     static final int FAKE_CALENDAR_ID = -1;
 
@@ -62,6 +63,7 @@ class Alarms {
         private int state = STATE_NEW;
         private boolean markDeleted = false;
         private int eventId = 0;
+        private boolean allDay = false;
 
         private Vibrator vibrator = null;
         private MediaPlayer player = null;
@@ -128,7 +130,8 @@ class Alarms {
                     eventTime = null;
             String title = null,
                     ringtone = null;
-            boolean vibrate = false;
+            boolean vibrate = false,
+                    allDay = false;
             int calendarId = 0,
                     eventId = 0,
                     state = STATE_STORED;
@@ -146,18 +149,19 @@ class Alarms {
                 version = alm.getString(ALARM_VERSION);
                 eventId = alm.getInt(ALARM_EVENT_ID);
                 state = alm.getInt(ALARM_STATE);
+                allDay = alm.getBoolean(ALARM_ALL_DAY);
             } catch (Exception e) {
                 Log.e(this.getClass().toString(), e.getMessage());
             }
 
-            return set(calendarId, title, reminderTime, eventTime, ringtone, vibrate, state, eventId, version);
+            return set(calendarId, title, reminderTime, eventTime, ringtone, vibrate, state, eventId, version, allDay);
         }
 
-        void set(int calendarId, String title, Calendar reminderTime, Calendar eventTime, String ringtone, boolean vibrate, int eventId) {
-            set(calendarId, title, reminderTime, eventTime, ringtone, vibrate, STATE_UNCHANGED, eventId, ALARMS_STORAGE_VERSION);
+        void set(int calendarId, String title, Calendar reminderTime, Calendar eventTime, String ringtone, boolean vibrate, int eventId, boolean allDay) {
+            set(calendarId, title, reminderTime, eventTime, ringtone, vibrate, STATE_UNCHANGED, eventId, ALARMS_STORAGE_VERSION, allDay);
         }
 
-        Alarm set(int calendarId, String title, Calendar reminderTime, Calendar eventTime, String ringtone, boolean vibrate, int state, int eventId, String version) {
+        Alarm set(int calendarId, String title, Calendar reminderTime, Calendar eventTime, String ringtone, boolean vibrate, int state, int eventId, String version, boolean allDay) {
             setReminderTime(reminderTime);
             setEventTime(eventTime);
             setTitle(title);
@@ -167,6 +171,7 @@ class Alarms {
             setVersion(version);
             setState(state);
             setEventId(eventId);
+            setAllDay(allDay);
 
             return this;
         }
@@ -182,7 +187,7 @@ class Alarms {
         }
 
         void set(Alarm alarm) {
-            this.set(alarm.getCalendarId(), alarm.getTitle(), alarm.getReminderTime(), alarm.getEventTime(), alarm.getRingtone(), alarm.isVibrate(), alarm.getEventId());
+            this.set(alarm.getCalendarId(), alarm.getTitle(), alarm.getReminderTime(), alarm.getEventTime(), alarm.getRingtone(), alarm.isVibrate(), alarm.getEventId(), alarm.isAllDay());
         }
 
         String getVersion() {
@@ -211,7 +216,7 @@ class Alarms {
             if (state == Alarm.STATE_NEW) {
                 this.state = Alarm.STATE_STORED;
             } else if (hasState(state)) {
-                this.state ^= state;
+                this.state &= ~state;
             }
         }
 
@@ -239,7 +244,8 @@ class Alarms {
                         .put(ALARM_CALENDAR_ID, this.calendarId)
                         .put(ALARM_EVENT_ID, this.eventId)
                         .put(ALARM_VERSION, this.version)
-                        .put(ALARM_STATE, this.state);
+                        .put(ALARM_STATE, this.state)
+                        .put(ALARM_ALL_DAY, this.allDay);
             } catch (Exception e) {
                 Log.d(e.getClass().toString(), "Converting alarm toJSON failed");
             }
@@ -392,6 +398,14 @@ class Alarms {
 
         void setEventId(int eventId) {
             this.eventId = eventId;
+        }
+
+        public boolean isAllDay() {
+            return allDay;
+        }
+
+        public void setAllDay(boolean allDay) {
+            this.allDay = allDay;
         }
     }
 

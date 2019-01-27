@@ -47,7 +47,9 @@
     <string name="notification_snackbar_alarm_in_use">You cannot modify alarm \"%1$s\" while it\'s being used. Please try again later.</string>
 
     <string name="activity_alarm_list_delete_alarm">Delete</string>
-    <string name="activity_alarm_list_alarm_time_format">%1$s at %2$s</string>
+    <string name="activity_alarm_list_alarm_date_time_format" >%1$s %2$s</string>
+    <string name="activity_alarm_list_alarm_time_format">at %1$s</string>
+    <string name="activity_alarm_list_alarm_all_day">- All Day</string>
     <string name="activity_alarm_list_alarm_reminder_time">Reminder at: %1$s</string>
     <string name="activity_alarm_list_alarm_event_time">Event at: %1$s</string>
     <string name="activity_alarm_list_alarm_calendar">From: %1$s</string>

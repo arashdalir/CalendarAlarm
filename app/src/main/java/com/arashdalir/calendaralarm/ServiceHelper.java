@@ -15,11 +15,13 @@ import android.util.Log;
 
 import org.json.JSONObject;
 
+import java.text.DateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
 import java.util.List;
 import java.util.Observable;
+import java.util.TimeZone;
 
 import static android.content.Intent.FLAG_ACTIVITY_REORDER_TO_FRONT;
 
@@ -165,6 +167,7 @@ class ServiceHelper {
 
             case ServiceHelper.ACTION_REMINDER_CANCEL:
                 state = Alarms.Alarm.STATE_REMINDER_TIME_PASSED;
+                alarm.resetState(Alarms.Alarm.STATE_SNOOZED);
                 break;
 
         }
@@ -323,12 +326,21 @@ class ServiceHelper {
 
     private Alarms.AlarmsStati readNotifications() {
         Calendar now = Calendar.getInstance();
+        now.set(Calendar.MINUTE, 0);
+        now.set(Calendar.HOUR_OF_DAY, 0);
+        now.set(Calendar.SECOND, 0);
+        now.set(Calendar.MILLISECOND, 0);
+        now.add(Calendar.MILLISECOND, -1 * now.getTimeZone().getRawOffset());
         long beginms = now.getTimeInMillis();
-        now.add(Calendar.DATE, 7);
+        now.add(Calendar.DATE, 8);
         long endms = now.getTimeInMillis();
+
+        int rawOffset = now.getTimeZone().getRawOffset();
 
         Cursor cursor = CalendarHelper.readEvents(context, beginms, endms);
         AlarmListAdapter adapter = ((CalendarApplication) context.getApplicationContext()).getAdapter(context);
+
+        adapter.reset();
 
         Integer[] allowedMethods = new Integer[]{
                 CalendarContract.Reminders.METHOD_ALARM,
@@ -340,10 +352,15 @@ class ServiceHelper {
         Boolean vibrate = StorageHelper.getVibrate(context);
         String ringtone = StorageHelper.getRingtone(context);
 
+        Log.d(this.getClass().toString(), "Time Now: " + beginms + "\n");
+
         if (cursor.moveToFirst()) {
             do {
                 int calendarId = cursor.getInt(cursor.getColumnIndex(CalendarContract.Reminders.CALENDAR_ID));
                 Long beginTime = cursor.getLong(cursor.getColumnIndex(CalendarContract.Instances.BEGIN));
+                String timeZone = cursor.getString(cursor.getColumnIndex(CalendarContract.Instances.EVENT_TIMEZONE));
+
+                beginTime = beginTime + (TimeZone.getTimeZone(timeZone).getRawOffset() - rawOffset);
 
                 if (!calendars.contains(calendarId) || beginms > beginTime) {
                     continue;
@@ -351,6 +368,21 @@ class ServiceHelper {
 
                 int eventId = cursor.getInt(cursor.getColumnIndex(CalendarContract.Instances.EVENT_ID));
                 String eventTitle = cursor.getString(cursor.getColumnIndex(CalendarContract.Instances.TITLE));
+
+                boolean isAllDay = false;
+
+                Calendar eventTime = Calendar.getInstance();
+                eventTime.setTimeInMillis(beginTime);
+
+                int allDay = cursor.getInt(cursor.getColumnIndex(CalendarContract.Instances.ALL_DAY));
+                if (allDay == 1)
+                {
+                    isAllDay = true;
+                }
+                //DateFormat df = android.text.format.DateFormat.getDateFormat(context);
+                //DateFormat tf = android.text.format.DateFormat.getTimeFormat(context);
+
+                Log.d(this.getClass().toString(), "TimeZone for Alarm " + eventTitle + " at time (" + beginTime.toString() + "): "+ timeZone + "\n");
 
                 Cursor rc = CalendarHelper.readReminders(context, eventId);
 
@@ -362,8 +394,6 @@ class ServiceHelper {
                             int minutes = rc.getInt(rc.getColumnIndex(CalendarContract.Reminders.MINUTES));
                             String reminderId = Integer.toString(rc.getInt(rc.getColumnIndex(CalendarContract.Reminders._ID)));
 
-                            Calendar eventTime = Calendar.getInstance();
-                            eventTime.setTimeInMillis(beginTime);
                             Calendar reminderTime = (Calendar) eventTime.clone();
                             reminderTime.add(Calendar.MINUTE, -1 * minutes);
 
@@ -375,7 +405,8 @@ class ServiceHelper {
                                             eventTime,
                                             ringtone,
                                             vibrate,
-                                            eventId
+                                            eventId,
+                                            isAllDay
                                     );
 
                         }

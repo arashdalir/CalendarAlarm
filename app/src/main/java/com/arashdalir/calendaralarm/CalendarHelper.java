@@ -33,7 +33,9 @@ class CalendarHelper {
             Instances.END,
             Instances.EVENT_ID,
             Instances.CALENDAR_ID,
-            Instances.DESCRIPTION
+            Instances.DESCRIPTION,
+            Instances.EVENT_TIMEZONE,
+            Instances.ALL_DAY
     };
 
     private static final String[] REMINDERS_PROJECTION = new String[]{

@@ -1,6 +1,7 @@
 package com.arashdalir.calendaralarm;
 
 import android.graphics.Canvas;
+import android.support.annotation.NonNull;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.helper.ItemTouchHelper;
 import android.view.View;
@@ -8,7 +9,7 @@ import android.view.View;
 public class AlarmsTouchHelper extends ItemTouchHelper.SimpleCallback {
     private AlarmTouchHelperListener listener;
 
-    public AlarmsTouchHelper(int dragDirs, int swipeDirs, AlarmTouchHelperListener listener) {
+    AlarmsTouchHelper(int dragDirs, int swipeDirs, AlarmTouchHelperListener listener) {
         super(dragDirs, swipeDirs);
         this.listener = listener;
     }
@@ -28,15 +29,15 @@ public class AlarmsTouchHelper extends ItemTouchHelper.SimpleCallback {
     }
 
     @Override
-    public boolean onMove(RecyclerView recyclerView, RecyclerView.ViewHolder viewHolder, RecyclerView.ViewHolder target) {
+    public boolean onMove(@NonNull RecyclerView recyclerView, @NonNull RecyclerView.ViewHolder viewHolder, @NonNull RecyclerView.ViewHolder target) {
         return false;
     }
 
     @Override
     public void onChildDraw(
-            Canvas c,
-            RecyclerView recyclerView,
-            RecyclerView.ViewHolder viewHolder,
+            @NonNull Canvas c,
+            @NonNull RecyclerView recyclerView,
+            @NonNull RecyclerView.ViewHolder viewHolder,
             float dX,
             float dY,
             int actionState,
@@ -64,7 +65,7 @@ public class AlarmsTouchHelper extends ItemTouchHelper.SimpleCallback {
     }
 
     @Override
-    public void onSwiped(RecyclerView.ViewHolder viewHolder, int direction) {
+    public void onSwiped(@NonNull RecyclerView.ViewHolder viewHolder, int direction) {
         listener.onSwiped(viewHolder, direction, viewHolder.getAdapterPosition());
     }
 

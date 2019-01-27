@@ -29,12 +29,14 @@ public class Receiver extends BroadcastReceiver {
             if (intent.getAction().equals(Intent.ACTION_PROVIDER_CHANGED)) {
                 Log.i(this.getClass().toString(), "Calendar changes received");
 
-                AlarmManagerService.enqueueWork(context, intent);
                 NotificationCompat.Builder builder = Notifier.getBuilder(context)
                         .setContentTitle(context.getString(R.string.notification_message_looking_for_events))
                         .setContentText(context.getString(R.string.notification_message_looking_for_events_description, context.getString(R.string.app_name)));
 
                 Notifier.notify(context, builder, Notifier.NOTIFY_GENERAL, NotificationCompat.PRIORITY_DEFAULT);
+
+                Intent serviceIntent = new Intent(ServiceHelper.ACTION_DO_JOB);
+                AlarmManagerService.enqueueWork(context, serviceIntent);
             }
         }
     }

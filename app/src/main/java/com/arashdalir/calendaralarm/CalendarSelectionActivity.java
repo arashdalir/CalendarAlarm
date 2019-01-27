@@ -67,6 +67,7 @@ public class CalendarSelectionActivity extends AppCompatActivity {
                         cb.setText(entry);
                         cb.setLayoutParams(params);
                         layout.addView(cb);
+                        cb.setTextColor(bgColor);
                         setCheckBoxColor(cb, bgColor, bgColor);
                         checkBoxes.add(cb);
                     }
@@ -114,7 +115,7 @@ public class CalendarSelectionActivity extends AppCompatActivity {
 
         StorageHelper.setCalendars(this, selectedCalendars);
 
-        Notifier.showToast(context, context.getString(R.string.notification_toast_calendar_selection_saved), Toast.LENGTH_LONG);
+        //Notifier.showToast(context, context.getString(R.string.notification_toast_calendar_selection_saved), Toast.LENGTH_LONG);
 
         AlarmManagerService.enqueueWork(context);
     }

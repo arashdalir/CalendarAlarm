@@ -75,7 +75,7 @@ class OptionsItemSelectionHelper {
         Calendar event = (Calendar) reminder.clone();
         event.add(Calendar.MINUTE, 3);
 
-        alarm.set(Alarms.FAKE_CALENDAR_ID, "Fake Alarm", reminder, event, StorageHelper.getRingtone(context), StorageHelper.getVibrate(context), 0);
+        alarm.set(Alarms.FAKE_CALENDAR_ID, "Fake Alarm", reminder, event, StorageHelper.getRingtone(context), StorageHelper.getVibrate(context), -1 * (int)(reminder.getTimeInMillis()/1000), false);
         alarms.sort();
 
         Activity a = (Activity)context;

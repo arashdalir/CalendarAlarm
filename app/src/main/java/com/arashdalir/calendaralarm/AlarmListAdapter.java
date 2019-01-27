@@ -64,16 +64,42 @@ public class AlarmListAdapter
 
         DateFormat df = android.text.format.DateFormat.getDateFormat(context);
         DateFormat tf = android.text.format.DateFormat.getTimeFormat(context);
-        String reminderTime = context.getString(R.string.activity_alarm_list_alarm_reminder_time, context.getString(R.string.activity_alarm_list_alarm_time_format, df.format(alarm.getReminderTime().getTime()), tf.format(alarm.getReminderTime().getTime())));
-        String eventTime = context.getString(R.string.activity_alarm_list_alarm_event_time, context.getString(R.string.activity_alarm_list_alarm_time_format, df.format(alarm.getEventTime().getTime()), tf.format(alarm.getEventTime().getTime())));
 
-        TextView title = holder.alarmView.findViewById(R.id.alarm_title);
-        Switch on = holder.alarmView.findViewById(R.id.alarm_active);
-        TextView vEventTime = holder.alarmView.findViewById(R.id.alarm_event_time);
-        TextView vReminderTime = holder.alarmView.findViewById(R.id.alarm_reminder_time);
-        TextView calendarName = holder.alarmView.findViewById(R.id.alarm_calendar);
-        ConstraintLayout alarmItem = holder.alarmView.findViewById(R.id.alarm_list_cl_alarm_item);
-        ConstraintLayout alarmDetails = holder.alarmView.findViewById(R.id.alarm_details);
+        String alarmTime;
+
+        if (!alarm.isAllDay())
+        {
+            alarmTime = context.getString(R.string.activity_alarm_list_alarm_time_format, tf.format(alarm.getEventTime().getTime()));
+        }
+        else
+        {
+            alarmTime = context.getString(R.string.activity_alarm_list_alarm_all_day);
+        }
+
+        String reminderTime = context.getString(
+                R.string.activity_alarm_list_alarm_reminder_time,
+                context.getString(
+                        R.string.activity_alarm_list_alarm_date_time_format,
+                        df.format(alarm.getReminderTime().getTime()),
+                        context.getString(R.string.activity_alarm_list_alarm_time_format, tf.format(alarm.getReminderTime().getTime()))
+                )
+        );
+        String eventTime = context.getString(
+                R.string.activity_alarm_list_alarm_event_time,
+                context.getString(
+                        R.string.activity_alarm_list_alarm_date_time_format,
+                        df.format(alarm.getEventTime().getTime()),
+                        alarmTime
+                )
+        );
+
+        TextView title = (TextView) holder.alarmView.findViewById(R.id.alarm_title);
+        Switch on = (Switch) holder.alarmView.findViewById(R.id.alarm_active);
+        TextView vEventTime = (TextView) holder.alarmView.findViewById(R.id.alarm_event_time);
+        TextView vReminderTime = (TextView) holder.alarmView.findViewById(R.id.alarm_reminder_time);
+        final TextView calendarName = (TextView) holder.alarmView.findViewById(R.id.alarm_calendar);
+        ConstraintLayout alarmItem = (ConstraintLayout) holder.alarmView.findViewById(R.id.alarm_list_cl_alarm_item);
+        ConstraintLayout alarmDetails = (ConstraintLayout) holder.alarmView.findViewById(R.id.alarm_details);
 
         View lastItem = (View) alarmDetails;
 
@@ -96,8 +122,9 @@ public class AlarmListAdapter
                 @Override
                 public void onClick(View v) {
                     Uri eventUri = ContentUris.withAppendedId(CalendarContract.Events.CONTENT_URI, alarm.getEventId());
-                    Intent calenderEvent = new Intent(Intent.ACTION_VIEW, eventUri);
-                    context.startActivity(calenderEvent);
+                    Intent calendarEvent = new Intent(Intent.ACTION_VIEW, eventUri);
+                    calendarEvent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                    context.startActivity(calendarEvent);
                 }
             });
         }
@@ -201,5 +228,9 @@ public class AlarmListAdapter
 
     Alarms.Alarm getAlarm(String reminderId, boolean createIfNotExists) {
         return this.getAlarms().find(reminderId, createIfNotExists);
+    }
+
+    void reset(){
+        alarms.clear();
     }
 }

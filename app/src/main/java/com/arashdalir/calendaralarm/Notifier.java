@@ -108,7 +108,7 @@ public class Notifier {
                 .addAction(R.drawable.ic_info_black_24dp, context.getString(R.string.activity_snooze_snooze), pSnooze)
                 .addAction(R.drawable.ic_info_black_24dp, context.getString(R.string.activity_snooze_cancel), pCancel);
 
-        Notifier.notify(context, builder, Notifier.NOTIFY_SNOOZE, NotificationCompat.PRIORITY_MAX);
+        Notifier.notify(context, builder, alarm.getEventId(), NotificationCompat.PRIORITY_MAX);
     }
 
     static class SnackBarAction {

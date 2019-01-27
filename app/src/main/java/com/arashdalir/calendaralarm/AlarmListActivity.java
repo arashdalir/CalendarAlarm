@@ -44,7 +44,7 @@ public class AlarmListActivity extends AppCompatActivity implements AlarmsTouchH
             @Override
             public void onRefresh() {
                 Intent intent = new Intent(getApplicationContext(), AlarmManagerService.class);
-                intent.setAction(ServiceHelper.ACTION_CHECK_REMINDER_ALARMS);
+                intent.setAction(ServiceHelper.ACTION_DO_JOB);
                 AlarmManagerService.enqueueWork(getApplicationContext(), intent);
                 drawView(adapter);
                 refresher.setRefreshing(false);

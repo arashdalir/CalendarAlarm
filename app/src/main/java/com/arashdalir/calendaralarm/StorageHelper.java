@@ -89,24 +89,6 @@ public class StorageHelper {
         e.apply();
     }
 
-    public static void saveLastExecutionTime(Context context, Date dt) {
-        SharedPreferences settingsStorage = context.getSharedPreferences(StorageHelper.STORAGE_ID, MODE_PRIVATE);
-        SharedPreferences.Editor e = settingsStorage.edit();
-        e.putLong(StorageHelper.STORAGE_EXECUTION_TIME, dt.getTime());
-        e.apply();
-    }
-
-    public static Date getLastExecutionTime(Context context) {
-        SharedPreferences settingsStorage = context.getSharedPreferences(StorageHelper.STORAGE_ID, MODE_PRIVATE);
-        Long dtVal = settingsStorage.getLong(StorageHelper.STORAGE_EXECUTION_TIME, 0);
-
-        if (dtVal == 0) {
-            return null;
-        } else {
-            return new Date(dtVal);
-        }
-    }
-
     public static JSONArray getStoredAlarms(Context context) throws JSONException {
         SharedPreferences settingsStorage = context.getSharedPreferences(StorageHelper.STORAGE_ID, MODE_PRIVATE);
         String alarms = settingsStorage.getString(StorageHelper.STORAGE_ALARM_LIST, "");

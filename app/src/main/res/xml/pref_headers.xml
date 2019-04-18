@@ -2,10 +2,10 @@
     <!-- These settings headers are only used on tablets. -->
     <header
         android:fragment="com.arashdalir.calendaralarm.SettingsActivity$GeneralPreferenceFragment"
-        android:icon="@drawable/ic_info_black_24dp"
+        android:icon="@drawable/ic_settings_black_24dp"
         android:title="@string/pref_header_general" />
     <header
-        android:icon="@drawable/ic_info_black_24dp"
+        android:icon="@drawable/ic_permissions_black_24dp"
         android:title="@string/pref_header_permissions">
         <intent
             android:targetClass="com.arashdalir.calendaralarm.PermissionCheckActivity"
@@ -13,7 +13,7 @@
             />
     </header>
     <header
-        android:icon="@drawable/ic_info_black_24dp"
+        android:icon="@drawable/ic_calendar_black_24dp"
         android:title="@string/pref_header_calendars">
         <intent
             android:targetClass="com.arashdalir.calendaralarm.CalendarSelectionActivity"

@@ -99,7 +99,7 @@ class OptionsItemSelectionHelper {
                             public void onClick(DialogInterface dialog, int whichButton) {
                                 Notifier.showToast(context, context.getString(R.string.menu_reset_initiated), Toast.LENGTH_SHORT);
                                 final AlarmListAdapter adapter = ((CalendarApplication) context.getApplicationContext()).getAdapter(context);
-                                adapter.getAlarms().clear();
+                                adapter.getAlarms().clear(true);
                                 Notifier.showToast(context, context.getString(R.string.menu_reset_finished), Toast.LENGTH_LONG);
 
                                 a.runOnUiThread(new Runnable() {

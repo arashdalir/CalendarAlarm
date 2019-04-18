@@ -31,7 +31,7 @@ public class CalendarApplication extends Application {
         adapter.registerAdapterDataObserver(new RecyclerView.AdapterDataObserver() {
             @Override
             public void onChanged() {
-                StorageHelper.storeAlarms(getApplicationContext(), adapter.getAlarms().asJsonArray());
+                adapter.storeData(getApplicationContext());
                 super.onChanged();
             }
         });

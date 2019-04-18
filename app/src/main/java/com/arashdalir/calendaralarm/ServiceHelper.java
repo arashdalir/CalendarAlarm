@@ -1,5 +1,6 @@
 package com.arashdalir.calendaralarm;
 
+import android.annotation.TargetApi;
 import android.app.Activity;
 import android.app.AlarmManager;
 import android.app.PendingIntent;
@@ -7,7 +8,12 @@ import android.app.Service;
 import android.content.Context;
 import android.content.Intent;
 import android.database.Cursor;
+import android.media.AudioAttributes;
+import android.media.AudioManager;
+import android.media.MediaPlayer;
+import android.net.Uri;
 import android.os.Build;
+import android.os.Vibrator;
 import android.provider.CalendarContract;
 import android.support.annotation.RequiresApi;
 import android.support.v4.app.NotificationCompat;
@@ -24,6 +30,8 @@ import java.util.Observable;
 import java.util.TimeZone;
 
 import static android.content.Intent.FLAG_ACTIVITY_REORDER_TO_FRONT;
+import static android.content.Intent.makeMainActivity;
+import static android.media.AudioManager.AUDIOFOCUS_GAIN_TRANSIENT;
 
 class ServiceHelper {
     static final String ACTION_CHECK_REMINDER_ALARMS = "com.arashdalir.calendaralarm.action.MODIFY_REMINDER_ALARMS";
@@ -34,6 +42,11 @@ class ServiceHelper {
 
     static final String EXTRA_SNOOZE_ALARM = "alarm";
     private static Observable obAdapter = null;
+
+    static private Vibrator vibrator = null;
+    static private MediaPlayer player = null;
+    static private AudioManager audioManager;
+    static private int reminderQueue = 0;
 
     private Context context;
 
@@ -119,8 +132,6 @@ class ServiceHelper {
                 Notifier.notify(context, builder, Notifier.NOTIFY_GENERAL, NotificationCompat.PRIORITY_MAX);
             }
         }
-
-        StorageHelper.saveLastExecutionTime(context, Calendar.getInstance().getTime());
     }
 
     private void createRedoTimer() {
@@ -154,7 +165,8 @@ class ServiceHelper {
         }
 
         alarm.stopAlarm();
-        Notifier.cancelNotification(context, Notifier.NOTIFY_SNOOZE);
+        Notifier.cancelNotification(context, alarm.getEventId());
+        ServiceHelper.stopNotificationSound();
 
         int state = 0;
         switch (action) {
@@ -175,9 +187,10 @@ class ServiceHelper {
         if (state != 0) {
             alarm.setState(state);
             adapter.storeData(context);
-
             createNotificationAlarm(alarm, context);
         }
+
+        ServiceHelper.observeAdapter().hasChanged();
     }
 
     private void handleNoPermission() {
@@ -296,7 +309,8 @@ class ServiceHelper {
         }
 
         AlarmListAdapter adapter = ((CalendarApplication) context.getApplicationContext()).getAdapter(context);
-        alarm.startAlarm(context);
+        alarm.startAlarm();
+        ServiceHelper.startNotificationSound(context, alarm.isVibrate());
 
         Notifier.showSnooze(context, alarm);
         adapter.storeData(context);
@@ -341,7 +355,7 @@ class ServiceHelper {
         Cursor cursor = CalendarHelper.readEvents(context, beginms, endms);
         AlarmListAdapter adapter = ((CalendarApplication) context.getApplicationContext()).getAdapter(context);
 
-        adapter.reset();
+        //adapter.reset(false);
 
         Integer[] allowedMethods = new Integer[]{
                 CalendarContract.Reminders.METHOD_ALARM,
@@ -352,8 +366,6 @@ class ServiceHelper {
 
         Boolean vibrate = StorageHelper.getVibrate(context);
         String ringtone = StorageHelper.getRingtone(context);
-
-        Log.d(this.getClass().toString(), "Time Now: " + beginms + "\n");
 
         if (cursor.moveToFirst()) {
             do {
@@ -382,8 +394,6 @@ class ServiceHelper {
                 }
                 //DateFormat df = android.text.format.DateFormat.getDateFormat(context);
                 //DateFormat tf = android.text.format.DateFormat.getTimeFormat(context);
-
-                Log.d(this.getClass().toString(), "TimeZone for Alarm " + eventTitle + " at time (" + beginTime.toString() + "): "+ timeZone + "\n");
 
                 Cursor rc = CalendarHelper.readReminders(context, eventId);
 
@@ -426,5 +436,103 @@ class ServiceHelper {
         observeAdapter().notifyObservers(adapter);
 
         return status;
+    }
+
+    private static void startNotificationSound(Context context, boolean shouldVibrate){
+        if (reminderQueue == 0)
+        {
+            ServiceHelper.vibrate(context, shouldVibrate);
+            ServiceHelper.playRingtone(context);
+        }
+
+        reminderQueue++;
+    }
+
+    private static void stopNotificationSound(){
+        reminderQueue = Math.max(reminderQueue-1, 0);
+
+        if (reminderQueue == 0)
+        {
+            ServiceHelper.cancelVibrate();
+            ServiceHelper.stopRingtone();
+        }
+
+
+    }
+
+    @TargetApi(Build.VERSION_CODES.LOLLIPOP)
+    private static void vibrate(Context context, boolean shouldVibrate) {
+        if (vibrator == null) {
+            vibrator = (Vibrator) context.getSystemService(Context.VIBRATOR_SERVICE);
+        }
+
+        if (shouldVibrate) {
+            if (vibrator.hasVibrator()) {
+                long[] pattern = new long[]{0, 500, 0, 0, 500};
+                vibrator.vibrate(pattern, 0,
+                        new AudioAttributes.Builder()
+                                .setUsage(AudioAttributes.USAGE_ALARM)
+                                .setContentType(AudioAttributes.CONTENT_TYPE_SONIFICATION)
+                                .build()
+                );
+            }
+        }
+    }
+
+    private static void cancelVibrate() {
+        if (vibrator != null) {
+            vibrator.cancel();
+        }
+    }
+
+    private static void playRingtone(Context context) {
+        String ringtoneName = StorageHelper.getRingtone(context, true);
+        Uri ringtoneUri = Uri.parse(ringtoneName);
+
+        try {
+            if (!Uri.EMPTY.equals(ringtoneUri)) {
+                if (audioManager == null) {
+                    audioManager = (AudioManager) context.getSystemService(Context.AUDIO_SERVICE);
+                }
+
+                player = MediaPlayer.create(context, ringtoneUri);
+                player.stop();
+
+                int sMax = audioManager.getStreamMaxVolume(AudioManager.STREAM_ALARM);
+                int sVolume = audioManager.getStreamVolume(AudioManager.STREAM_ALARM);
+                //audioManager.setStreamVolume(AudioManager.STREAM_ALARM, sVolume, sVolume);
+
+                player.setLooping(true);
+                player.setAudioAttributes(
+                        new AudioAttributes.Builder()
+                                .setLegacyStreamType(AudioManager.STREAM_ALARM)
+                                //.setUsage(AudioAttributes.USAGE_ALARM)
+                                .setUsage(AudioAttributes.USAGE_ALARM)
+                                .setFlags(AudioAttributes.CONTENT_TYPE_SONIFICATION)
+                                .build()
+                );
+
+                player.prepare();
+                audioManager.requestAudioFocus(null, AudioManager.STREAM_ALARM, AUDIOFOCUS_GAIN_TRANSIENT);
+                audioManager.setStreamVolume(AudioManager.STREAM_ALARM, sMax, 0);
+                player.start();
+            }
+        } catch (Exception e) {
+
+        }
+    }
+
+    private static void stopRingtone() {
+        if (player != null) {
+            if (player.isPlaying()) {
+                player.stop();
+                player.release();
+                player = null;
+            }
+        }
+
+        if (audioManager != null) {
+            audioManager.abandonAudioFocus(null);
+        }
     }
 }

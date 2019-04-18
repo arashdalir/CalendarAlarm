@@ -217,7 +217,7 @@ public class AlarmListAdapter
 
     boolean checkTimes() {
         boolean status = alarms.checkTimes();
-        StorageHelper.storeAlarms(context, alarms.asJsonArray());
+        storeData(context);
 
         return status;
     }

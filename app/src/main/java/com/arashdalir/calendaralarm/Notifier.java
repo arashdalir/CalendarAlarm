@@ -12,10 +12,10 @@ import android.view.Gravity;
 import android.view.View;
 import android.widget.Toast;
 
-public class Notifier {
+class Notifier {
     static final int NOTIFY_PERMISSIONS_MISSING = 1;
     static final int NOTIFY_GENERAL = 2;
-    static final int NOTIFY_SNOOZE = 3;
+    private static final String NOTIFY_SNOOZE_GROUP = "snoozing_reminders";
 
     private static NotificationManager notificationManager;
 
@@ -26,28 +26,38 @@ public class Notifier {
         return new NotificationCompat.Builder(context, Notifier.NOTIFICATION_CHANNEL);
     }
 
-    static boolean notify(Context context, NotificationCompat.Builder builder, int notificationId, int priority) {
+    static void notify(Context context, NotificationCompat.Builder builder, int notificationId, int priority) {
         builder.setPriority(priority)
-                .setSmallIcon(R.drawable.ic_info_black_24dp);
+                .setSmallIcon(R.drawable.ic_bell);
 
         try {
-            prepareNotificationChannel(context).cancel(notificationId);
-            prepareNotificationChannel(context).notify(notificationId, builder.build());
+            prepareNotificationChannel(context, priority).cancel(notificationId);
+            prepareNotificationChannel(context, priority).notify(notificationId, builder.build());
 
-            return true;
         } catch (Exception e) {
-            return false;
         }
     }
 
-    private static NotificationManager prepareNotificationChannel(Context context) {
+    private static NotificationManager prepareNotificationChannel(Context context, int priority) {
         if (notificationManager == null) {
             notificationManager = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
 
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
                 CharSequence name = context.getString(R.string.app_name);
                 String description = context.getString(R.string.app_name) + ' ' + context.getString(R.string.notification_channel_name);
+
                 int importance = NotificationManager.IMPORTANCE_DEFAULT;
+
+                switch (priority)
+                {
+                    case NotificationCompat.PRIORITY_MAX:
+                        importance = NotificationManager.IMPORTANCE_MAX;
+                        break;
+                    case NotificationCompat.PRIORITY_HIGH:
+                        importance = NotificationManager.IMPORTANCE_HIGH;
+                        break;
+                }
+
                 NotificationChannel channel = new NotificationChannel(NOTIFICATION_CHANNEL, name, importance);
                 channel.setDescription(description);
                 // Register the channel with the system
@@ -84,7 +94,7 @@ public class Notifier {
 
     static void cancelNotification(Context context, int notificationId) {
         try {
-            prepareNotificationChannel(context).cancel(notificationId);
+            prepareNotificationChannel(context, NotificationManager.IMPORTANCE_DEFAULT).cancel(notificationId);
         } catch (Exception e) {
         }
     }
@@ -105,8 +115,10 @@ public class Notifier {
                 .setContentText(alarm.getCalendarName(context))
                 .setColor(alarm.getCalendarColor(context))
                 .setOngoing(true)
-                .addAction(R.drawable.ic_info_black_24dp, context.getString(R.string.activity_snooze_snooze), pSnooze)
-                .addAction(R.drawable.ic_info_black_24dp, context.getString(R.string.activity_snooze_cancel), pCancel);
+                .setGroup(NOTIFY_SNOOZE_GROUP)
+                .setGroupAlertBehavior(NotificationCompat.GROUP_ALERT_ALL)
+                .addAction(R.drawable.ic_snooze, context.getString(R.string.activity_snooze_snooze), pSnooze)
+                .addAction(R.drawable.ic_cancel, context.getString(R.string.activity_snooze_cancel), pCancel);
 
         Notifier.notify(context, builder, alarm.getEventId(), NotificationCompat.PRIORITY_MAX);
     }

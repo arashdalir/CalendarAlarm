@@ -1,6 +1,7 @@
 package com.arashdalir.calendaralarm;
 
 import android.annotation.TargetApi;
+import android.app.Service;
 import android.content.Context;
 import android.media.AudioAttributes;
 import android.media.AudioManager;
@@ -64,10 +65,6 @@ class Alarms {
         private boolean markDeleted = false;
         private int eventId = 0;
         private boolean allDay = false;
-
-        private Vibrator vibrator = null;
-        private MediaPlayer player = null;
-        private AudioManager audioManager;
 
         Alarm(String id) {
             this.reminderId = id;
@@ -280,82 +277,6 @@ class Alarms {
             return isMarkedForDeletion() || hasState(Alarm.STATE_DELETED);
         }
 
-        @TargetApi(Build.VERSION_CODES.HONEYCOMB)
-        void vibrate(Context context) {
-            if (vibrator == null) {
-                vibrator = (Vibrator) context.getSystemService(Context.VIBRATOR_SERVICE);
-            }
-
-            if (isVibrate()) {
-                if (vibrator.hasVibrator()) {
-                    long[] pattern = new long[]{0, 500, 0, 0, 500};
-                    vibrator.vibrate(pattern, 0,
-                            new AudioAttributes.Builder()
-                                    .setUsage(AudioAttributes.USAGE_ALARM)
-                                    .setContentType(AudioAttributes.CONTENT_TYPE_SONIFICATION)
-                                    .build()
-                    );
-                }
-            }
-        }
-
-        void cancelVibrate() {
-
-            if (vibrator != null) {
-                vibrator.cancel();
-            }
-        }
-
-        void playRingtone(Context context) {
-            String ringtoneName = StorageHelper.getRingtone(context, true);
-            Uri ringtoneUri = Uri.parse(ringtoneName);
-
-            try {
-                if (!Uri.EMPTY.equals(ringtoneUri)) {
-                    if (audioManager == null) {
-                        audioManager = (AudioManager) context.getSystemService(Context.AUDIO_SERVICE);
-                    }
-
-                    player = MediaPlayer.create(context, ringtoneUri);
-                    player.stop();
-
-                    int sMax = audioManager.getStreamMaxVolume(AudioManager.STREAM_ALARM);
-                    int sVolume = audioManager.getStreamVolume(AudioManager.STREAM_ALARM);
-                    //audioManager.setStreamVolume(AudioManager.STREAM_ALARM, sVolume, sVolume);
-
-                    player.setLooping(true);
-                    player.setAudioAttributes(
-                            new AudioAttributes.Builder()
-                                    .setLegacyStreamType(AudioManager.STREAM_ALARM)
-                                    //.setUsage(AudioAttributes.USAGE_ALARM)
-                                    .setUsage(AudioAttributes.USAGE_ALARM)
-                                    .setFlags(AudioAttributes.CONTENT_TYPE_SONIFICATION)
-                                    .build()
-                    );
-
-                    player.prepare();
-                    audioManager.requestAudioFocus(null, AudioManager.STREAM_ALARM, AUDIOFOCUS_GAIN_TRANSIENT);
-                    audioManager.setStreamVolume(AudioManager.STREAM_ALARM, sMax, 0);
-                    player.start();
-                }
-            } catch (Exception e) {
-
-            }
-        }
-
-        void stopRingtone() {
-            if (player != null) {
-                if (player.isPlaying()) {
-                    player.stop();
-                    player.release();
-                    player = null;
-                }
-            }
-
-            if (audioManager != null) {
-                audioManager.abandonAudioFocus(null);
-            }
-        }
 
         int getCalendarColor(Context context) {
             CalendarHelper.CalendarInfo calendar = CalendarHelper.getCalendarInfo(context, getCalendarId());
@@ -371,14 +292,10 @@ class Alarms {
 
         void stopAlarm() {
             resetState(STATE_ALARMING);
-            cancelVibrate();
-            stopRingtone();
         }
 
-        void startAlarm(Context context) {
+        void startAlarm() {
             setState(STATE_ALARMING);
-            vibrate(context);
-            playRingtone(context);
         }
 
         static String getIdFromJSON(JSONObject obj) {
@@ -400,12 +317,16 @@ class Alarms {
             this.eventId = eventId;
         }
 
-        public boolean isAllDay() {
+        boolean isAllDay() {
             return allDay;
         }
 
-        public void setAllDay(boolean allDay) {
+        void setAllDay(boolean allDay) {
             this.allDay = allDay;
+        }
+
+        boolean isFake() {
+            return calendarId == Alarms.FAKE_CALENDAR_ID;
         }
     }
 
@@ -608,8 +529,18 @@ class Alarms {
         );
     }
 
-    void clear() {
-        alarms.clear();
+    void clear(boolean clearFakes) {
+        ArrayList<Alarm> removeList = new ArrayList<>();
+
+        for (Alarm alarm: alarms)
+        {
+            if (clearFakes || !alarm.isFake())
+            {
+                removeList.add(alarm);
+            }
+        }
+
+        alarms.removeAll(removeList);
     }
 
     int count() {

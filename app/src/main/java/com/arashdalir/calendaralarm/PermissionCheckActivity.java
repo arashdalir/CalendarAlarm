@@ -5,6 +5,7 @@ import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.content.pm.PermissionInfo;
 import android.graphics.Typeface;
+import android.os.Build;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
@@ -67,7 +68,10 @@ public class PermissionCheckActivity extends AppCompatActivity {
             String[] permissions = new String[permissionsList.size()];
             permissions = permissionsList.toArray(permissions);
 
-            requestPermissions(permissions, PERMISSION_REQUEST_ID);
+
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                requestPermissions(permissions, PERMISSION_REQUEST_ID);
+            }
 
         } else {
             Intent intent = new Intent(context, SettingsActivity.class).setFlags(FLAG_ACTIVITY_REORDER_TO_FRONT);

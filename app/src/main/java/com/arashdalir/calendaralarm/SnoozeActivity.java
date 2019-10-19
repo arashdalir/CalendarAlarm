@@ -1,8 +1,8 @@
 package com.arashdalir.calendaralarm;
 
 import android.os.Bundle;
-import android.support.constraint.ConstraintLayout;
-import android.support.v7.app.AppCompatActivity;
+import androidx.constraintlayout.widget.ConstraintLayout;
+import androidx.appcompat.app.AppCompatActivity;
 import android.widget.TextView;
 
 public class SnoozeActivity extends AppCompatActivity {

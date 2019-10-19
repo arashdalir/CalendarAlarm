@@ -6,11 +6,11 @@ import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Build;
-import android.support.design.widget.Snackbar;
-import android.support.v4.app.NotificationCompat;
 import android.view.Gravity;
 import android.view.View;
 import android.widget.Toast;
+import com.google.android.material.snackbar.Snackbar;
+import androidx.core.app.NotificationCompat;
 
 class Notifier {
     static final int NOTIFY_PERMISSIONS_MISSING = 1;
@@ -48,8 +48,7 @@ class Notifier {
 
                 int importance = NotificationManager.IMPORTANCE_DEFAULT;
 
-                switch (priority)
-                {
+                switch (priority) {
                     case NotificationCompat.PRIORITY_MAX:
                         importance = NotificationManager.IMPORTANCE_MAX;
                         break;

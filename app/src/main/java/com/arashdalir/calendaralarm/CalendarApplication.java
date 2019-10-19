@@ -1,12 +1,9 @@
 package com.arashdalir.calendaralarm;
 
 import android.app.Application;
-import android.app.Service;
 import android.content.Context;
-import android.database.ContentObserver;
-import android.os.Handler;
-import android.provider.CalendarContract;
-import android.support.v7.widget.RecyclerView;
+
+import androidx.recyclerview.widget.RecyclerView;
 import android.widget.Toast;
 
 import org.json.JSONArray;

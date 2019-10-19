@@ -1,10 +1,9 @@
 package com.arashdalir.calendaralarm;
 
-import android.content.Intent;
 import android.database.ContentObserver;
 import android.net.Uri;
 import android.os.Handler;
-import android.support.v4.app.NotificationCompat;
+import androidx.core.app.NotificationCompat;
 
 public class CalendarReminderObserver extends ContentObserver{
     private Handler handler;

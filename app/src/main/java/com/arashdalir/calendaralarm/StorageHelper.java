@@ -5,15 +5,12 @@ import android.content.SharedPreferences;
 import android.media.RingtoneManager;
 import android.net.Uri;
 import android.preference.PreferenceManager;
-import android.util.JsonReader;
 
 import org.json.JSONArray;
 import org.json.JSONException;
-import org.json.JSONObject;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Date;
 import java.util.List;
 
 import static android.content.Context.MODE_PRIVATE;
@@ -26,7 +23,7 @@ public class StorageHelper {
     public static final String STORAGE_EXECUTION_TIME = "last_exec_time";
     public static final String STORAGE_ALARM_LIST = "alarm_list";
 
-    public static Integer[] getCalendars(Context context) {
+    static Integer[] getCalendars(Context context) {
         SharedPreferences settingsStorage = PreferenceManager.getDefaultSharedPreferences(context);
         String list = settingsStorage.getString(StorageHelper.STORAGE_CALENDARS, "");
 
@@ -45,18 +42,18 @@ public class StorageHelper {
         return currentCalendars.toArray(output);
     }
 
-    public static void setCalendars(Context context, List<Integer> calendars) {
+    static void setCalendars(Context context, List<Integer> calendars) {
         SharedPreferences settingsStorage = PreferenceManager.getDefaultSharedPreferences(context);
         SharedPreferences.Editor e = settingsStorage.edit();
         e.putString(StorageHelper.STORAGE_CALENDARS, Arrays.toString(calendars.toArray()));
         e.apply();
     }
 
-    public static String getRingtone(Context context) {
+    static String getRingtone(Context context) {
         return getRingtone(context, false);
     }
 
-    public static String getRingtone(Context context, boolean returnDefault) {
+    static String getRingtone(Context context, boolean returnDefault) {
         Uri defaultAlarmRingtone = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_ALARM);
         String defaultRingtone = defaultAlarmRingtone.toString();
         SharedPreferences settingsStorage = PreferenceManager.getDefaultSharedPreferences(context);
@@ -70,14 +67,14 @@ public class StorageHelper {
         return ringtone;
     }
 
-    public static void setRingtone(Context context, String alarmRingtone) {
+    static void setRingtone(Context context, String alarmRingtone) {
         SharedPreferences settingsStorage = PreferenceManager.getDefaultSharedPreferences(context);
         SharedPreferences.Editor e = settingsStorage.edit();
         e.putString(StorageHelper.STORAGE_ALARM_RINGTONE, alarmRingtone);
         e.apply();
     }
 
-    public static Boolean getVibrate(Context context) {
+    static Boolean getVibrate(Context context) {
         SharedPreferences settingsStorage = PreferenceManager.getDefaultSharedPreferences(context);
         return settingsStorage.getBoolean(StorageHelper.STORAGE_ALARM_VIBRATE, false);
     }

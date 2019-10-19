@@ -1,10 +1,8 @@
 package com.arashdalir.calendaralarm;
 
 import android.annotation.TargetApi;
-import android.app.Activity;
 import android.app.AlarmManager;
 import android.app.PendingIntent;
-import android.app.Service;
 import android.content.Context;
 import android.content.Intent;
 import android.database.Cursor;
@@ -15,13 +13,10 @@ import android.net.Uri;
 import android.os.Build;
 import android.os.Vibrator;
 import android.provider.CalendarContract;
-import android.support.annotation.RequiresApi;
-import android.support.v4.app.NotificationCompat;
 import android.util.Log;
 
 import org.json.JSONObject;
 
-import java.text.DateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
@@ -29,8 +24,9 @@ import java.util.List;
 import java.util.Observable;
 import java.util.TimeZone;
 
+import androidx.core.app.NotificationCompat;
+
 import static android.content.Intent.FLAG_ACTIVITY_REORDER_TO_FRONT;
-import static android.content.Intent.makeMainActivity;
 import static android.media.AudioManager.AUDIOFOCUS_GAIN_TRANSIENT;
 
 class ServiceHelper {
@@ -62,7 +58,6 @@ class ServiceHelper {
         this.context = context;
     }
 
-    @RequiresApi(api = Build.VERSION_CODES.KITKAT)
     void onHandleWork(Intent intent) {
         if (intent == null) {
             return;
@@ -93,7 +88,9 @@ class ServiceHelper {
 
     private void handleDoJob(String action) {
         Alarms.AlarmsStati stati = readNotifications();
-        handleCreateNotificationAlarms();
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
+            handleCreateNotificationAlarms();
+        }
 
         boolean modified = false;
 
@@ -101,7 +98,10 @@ class ServiceHelper {
 
         if (stati.getTotal() > 0) {
             NotificationCompat.Builder builder = Notifier.getBuilder(context);
-            Intent mainIntent = new Intent(context, AlarmListActivity.class).setFlags(FLAG_ACTIVITY_REORDER_TO_FRONT);
+            Intent mainIntent = null;
+            if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.CUPCAKE) {
+                mainIntent = new Intent(context, AlarmListActivity.class).setFlags(FLAG_ACTIVITY_REORDER_TO_FRONT);
+            }
             PendingIntent pIntent = PendingIntent.getActivity(context, 5, mainIntent, 0);
 
             if (stati.getAdded() > 0) {
@@ -154,10 +154,9 @@ class ServiceHelper {
         }
     }
 
-    @RequiresApi(api = Build.VERSION_CODES.KITKAT)
     private void handleSnooze(Intent intent, String action) {
         CalendarApplication app = (CalendarApplication) context.getApplicationContext();
-        final AlarmListAdapter adapter = app.getAdapter(context);
+        final AlarmListAdapter adapter = (AlarmListAdapter)app.getAdapter(context);
         Alarms.Alarm alarm = getAlarmByIntent(context, intent);
 
         if (alarm == null) {
@@ -219,7 +218,6 @@ class ServiceHelper {
         Notifier.notify(context, builder, Notifier.NOTIFY_GENERAL, NotificationCompat.PRIORITY_MAX);
     }
 
-    @RequiresApi(api = Build.VERSION_CODES.KITKAT)
     private void handleCreateNotificationAlarms() {
         AlarmListAdapter adapter = ((CalendarApplication) context.getApplicationContext()).getAdapter(context);
 
@@ -238,7 +236,6 @@ class ServiceHelper {
         }
     }
 
-    @RequiresApi(api = Build.VERSION_CODES.KITKAT)
     private void createNotificationAlarm(Alarms.Alarm alarm, Context context) {
         AlarmManager am = (AlarmManager) context.getSystemService(AlarmManagerService.ALARM_SERVICE);
         try {
@@ -275,7 +272,6 @@ class ServiceHelper {
      * parameters.
      */
 
-    @RequiresApi(api = Build.VERSION_CODES.KITKAT)
     private void handleStartService() {
         Intent appIntent = new Intent(context, AlarmListActivity.class).setFlags(FLAG_ACTIVITY_REORDER_TO_FRONT);
         PendingIntent pi = PendingIntent.getActivity(context, 4, appIntent, 0);

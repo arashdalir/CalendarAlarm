@@ -11,13 +11,37 @@ import android.provider.CalendarContract.Calendars;
 import android.provider.CalendarContract.Instances;
 import android.util.SparseArray;
 
-import java.util.Calendar;
-
 /**
  * Created by ada on 18-Oct-17.
  */
 
 class CalendarHelper {
+
+    static class CalendarInfo{
+        private int id;
+        private String displayName;
+        private int color;
+
+        CalendarInfo(int id, String displayName, int color)
+        {
+            this.id = id;
+            this.displayName = displayName;
+            this.color = color;
+        }
+
+        public int getId(){
+            return id;
+        }
+
+        String getDisplayName() {
+            return displayName;
+        }
+
+        public int getColor() {
+            return color;
+        }
+    }
+
     // Calendars Projection
     private static final String[] CALENDAR_PROJECTION = new String[]{
             Calendars._ID,
@@ -46,37 +70,11 @@ class CalendarHelper {
     };
 
     private static SparseArray<CalendarInfo> calendars = new SparseArray<>();
-
-    static class CalendarInfo{
-        private int id;
-        private String displayName;
-        private int color;
-
-        CalendarInfo(int id, String displayName, int color)
-        {
-            this.id = id;
-            this.displayName = displayName;
-            this.color = color;
-        }
-
-        public int getId(){
-            return id;
-        }
-
-        String getDisplayName() {
-            return displayName;
-        }
-
-        public int getColor() {
-            return color;
-        }
-    }
-
     static Cursor readCalendars(Context context) {
         return readCalendars(context, 0);
     }
 
-    static Cursor readCalendars(Context context, int calendarId) {
+    private static Cursor readCalendars(Context context, int calendarId) {
         Uri.Builder builder = Calendars.CONTENT_URI.buildUpon();
         ContentResolver contentResolver = context.getContentResolver();
 
